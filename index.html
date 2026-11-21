@@ -129,7 +129,7 @@ a { color: var(--accent); }
 .dot { width: 9px; height: 9px; border-radius: 50%; background: #a9b5ad; flex: none; transition: background 0.3s, box-shadow 0.3s; }
 .dot.on { background: #2fbf71; box-shadow: 0 0 0 4px rgba(47, 191, 113, 0.2); }
 
-.tabbar { display: none; position: fixed; left: 50%; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: calc(100% - 24px); max-width: 440px; z-index: 30; padding: 6px; border: 1px solid var(--line); border-radius: 28px; background: color-mix(in srgb, var(--surface) 82%, transparent); -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3); box-shadow: var(--shadow); grid-template-columns: repeat(3, 1fr); }
+.tabbar { display: none; position: fixed; left: 50%; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: calc(100% - 24px); max-width: 440px; z-index: 30; padding: 6px; border: 1px solid var(--line); border-radius: 28px; background: color-mix(in srgb, var(--surface) 82%, transparent); -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3); box-shadow: var(--shadow); grid-template-columns: repeat(2, 1fr); }
 .tabbar .ind { top: 6px; bottom: 6px; background: var(--accent-soft); box-shadow: none; border-radius: 22px; }
 .tabbar > a, .tabbar > button { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-height: 58px; border: 0; background: none; border-radius: 22px; color: var(--muted); font-weight: 600; font-size: 0.78rem; text-decoration: none; transition: color 0.25s, transform 0.18s var(--ease); }
 .tabbar > a:active, .tabbar > button:active { transform: scale(0.94); }
@@ -413,11 +413,40 @@ dialog#cook[open] { display: flex; flex-direction: column; animation: fade 0.35s
   .three { gap: 8px; }
   .dish-actions { grid-template-columns: 1fr; }
 }
+/* ---------- calmer, roomier layout ---------- */
+.card { border-color: color-mix(in srgb, var(--line) 55%, transparent); gap: 16px; }
+.view { gap: 28px; }
+.dish-main p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.backup { background: transparent; border: 0; box-shadow: none; padding: 4px 2px; }
+.backup h3 { font-size: 1.05rem; color: var(--muted); font-family: var(--font-body); font-weight: 600; }
+.fold .card-head { cursor: pointer; }
+.fold .card-head::after { content: ""; margin-left: auto; width: 10px; height: 10px; border-right: 2.5px solid var(--muted); border-bottom: 2.5px solid var(--muted); transform: rotate(45deg) translateY(-2px); transition: transform 0.35s var(--ease); }
+.fold.open .card-head::after { transform: rotate(-135deg); }
+.fold:not(.open) > :not(.card-head) { display: none; }
+.fold > :not(.card-head) { animation: rise 0.4s var(--ease) both; }
+#quick:not(.all) .chip.more { display: none; }
+.chip.toggle { background: transparent; border-style: dashed; color: var(--muted); }
+.setrow { display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; text-align: left; border: 0; background: var(--surface-2); border-radius: 20px; padding: 14px 18px; min-height: 68px; transition: transform 0.18s var(--ease), background 0.2s; }
+.setrow:active { transform: scale(0.98); }
+.setrow b { display: block; font-weight: 600; }
+.setrow small { color: var(--muted); }
+.sw { position: relative; flex: none; width: 52px; height: 30px; border-radius: 99px; background: var(--line); transition: background 0.25s; }
+.sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); transition: transform 0.35s var(--ease); }
+.setrow[aria-checked="true"] .sw { background: var(--accent); }
+.setrow[aria-checked="true"] .sw::after { transform: translateX(22px); }
+@media (max-width: 800px) {
+  .view { gap: 22px; }
+  .card { padding: 20px 18px; }
+  .hero { padding: 26px 22px; }
+  .hero .lead, .hero .btn.sun { display: none; }
+  .backup .hint { display: none; }
+  footer { font-size: 0.75em; opacity: 0.8; }
+}
+
 /* ---------- extra phone polish ---------- */
 @media (max-width: 800px) {
   .topbar { padding-inline: 10px; }
   .topbar-in { border-radius: 20px; padding: 6px 6px 6px 10px; gap: 8px; }
-  #guide-btn { display: none; }
   #ai-open-text { max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .iconbtn { min-height: 44px; border-radius: 14px; }
   .hero { padding: 24px 20px 26px; gap: 10px; }
@@ -471,9 +500,8 @@ dialog#cook[open] { display: flex; flex-direction: column; animation: fade 0.35s
       </a>
     </nav>
     <div class="tools">
-      <button type="button" class="iconbtn" id="size-btn" aria-pressed="false" aria-label="Bigger text"><span aria-hidden="true">Aa</span><span class="lbl">Bigger text</span></button>
-      <button type="button" class="iconbtn" id="guide-btn" aria-label="Open the guide"><span aria-hidden="true">?</span><span class="lbl">Guide</span></button>
       <button type="button" class="iconbtn" id="ai-open"><span class="dot" id="ai-dot"></span><span id="ai-open-text">Connect AI</span></button>
+      <button type="button" class="iconbtn" id="set-open" aria-label="Settings"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
     </div>
   </div>
 </header>
@@ -568,8 +596,8 @@ dialog#cook[open] { display: flex; flex-direction: column; animation: fade 0.35s
           <div class="seg" id="time" role="radiogroup" aria-label="Cooking time"></div>
         </section>
 
-        <section class="card" aria-labelledby="h-more">
-          <div class="card-head"><span class="num">3</span><h2 id="h-more">Extra choices <span class="hint">(optional)</span></h2></div>
+        <section class="card fold" id="fold-more" aria-labelledby="h-more">
+          <div class="card-head" id="fold-head" role="button" tabindex="0" aria-expanded="false"><span class="num">3</span><h2 id="h-more">Extra choices <span class="hint">(optional)</span></h2></div>
           <div class="opt"><input type="checkbox" id="veg"><label for="veg">Only vegetarian dishes</label></div>
           <div class="opt"><input type="checkbox" id="nutri"><label for="nutri">Show protein, calories and carbs</label></div>
           <p class="hint" id="nutri-hint" hidden>Numbers are a rough guess for one person. They use the quantities you typed, so add amounts like "2 potato" or "1 cup dal" for a better guess.</p>
@@ -609,13 +637,27 @@ dialog#cook[open] { display: flex; flex-direction: column; animation: fade 0.35s
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
     Cook with AI
   </a>
-  <button type="button" id="guide-btn-2">
+  <button type="button" id="guide-btn-2" hidden>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.3c-.7.4-1.1.9-1.1 1.7M12 17h.01"/></svg>
     Guide
   </button>
 </nav>
 
 <div id="toast" role="status" aria-live="polite"></div>
+
+<!-- Settings -->
+<dialog id="settings" class="sheetd" aria-labelledby="set-title">
+  <div class="sheet">
+    <div class="sheet-head">
+      <h2 id="set-title">Settings</h2>
+      <button type="button" class="iconbtn" id="set-close" aria-label="Close">Close</button>
+    </div>
+    <button type="button" class="setrow" id="size-btn" role="switch" aria-checked="false"><span><b>Bigger text</b><small>Easier to read</small></span><i class="sw"></i></button>
+    <button type="button" class="setrow" id="snd-btn" role="switch" aria-checked="true"><span><b>Sounds</b><small>Soft clicks and chimes</small></span><i class="sw"></i></button>
+    <button type="button" class="setrow" id="ai-open2"><span><b>AI connection</b><small id="ai-status2">Not connected</small></span><span aria-hidden="true">&rsaquo;</span></button>
+    <button type="button" class="setrow" id="guide-btn"><span><b>Guide</b><small>Replay the quick tour</small></span><span aria-hidden="true">&rsaquo;</span></button>
+  </div>
+</dialog>
 
 <!-- Connect an AI -->
 <dialog id="ai-dialog" class="sheetd" aria-labelledby="ai-title">
@@ -775,8 +817,38 @@ dialog#cook[open] { display: flex; flex-direction: column; animation: fade 0.35s
   function pretty(s) { s = String(s).trim(); return s.charAt(0).toUpperCase() + s.slice(1); }
   function num(v) { if (v == null || v === "") return "-"; var n = Math.round(Number(v)); return isFinite(n) ? String(n) : "-"; }
   function nid() { uid += 1; return "x" + uid; }
+  /* ---------- soft sounds (synthesized, no files) ---------- */
+  var armed = false, AC = null, soundOn = store("ffu2-sound") !== "0";
+  document.addEventListener("pointerdown", function () { armed = true; }, { capture: true, once: true });
+  function actx() {
+    if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } }
+    if (AC && AC.state === "suspended") AC.resume();
+    return AC;
+  }
+  function tone(f, t0, dur, type, vol, f2) {
+    var c = actx(); if (!c) return;
+    var s = c.currentTime + t0, o = c.createOscillator(), g = c.createGain();
+    o.type = type || "sine";
+    o.frequency.setValueAtTime(f, s);
+    if (f2) o.frequency.exponentialRampToValueAtTime(f2, s + dur);
+    g.gain.setValueAtTime(0.0001, s);
+    g.gain.exponentialRampToValueAtTime(vol, s + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, s + dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(s); o.stop(s + dur + 0.03);
+  }
+  var SFX = {
+    tap: function () { tone(1100, 0, 0.05, "triangle", 0.05, 600); },
+    soft: function () { tone(520, 0, 0.07, "sine", 0.04, 380); },
+    pop: function () { tone(480, 0, 0.1, "sine", 0.06, 880); },
+    step: function () { tone(740, 0, 0.08, "triangle", 0.05); tone(990, 0.06, 0.1, "triangle", 0.04); },
+    ok: function () { tone(660, 0, 0.12, "sine", 0.06); tone(880, 0.09, 0.2, "sine", 0.06); },
+    err: function () { tone(240, 0, 0.2, "sawtooth", 0.035, 160); }
+  };
+  function sfx(n) { if (soundOn && armed && SFX[n]) { try { SFX[n](); } catch (e) {} } }
   var toastTimer;
   function toast(msg) {
+    sfx(/could not|cannot|couldn't/i.test(msg) ? "err" : "ok");
     var t = $("toast");
     t.textContent = msg;
     t.classList.add("show");
@@ -797,10 +869,7 @@ dialog#cook[open] { display: flex; flex-direction: column; animation: fade 0.35s
   /* ---------- text size ---------- */
   function setBig(on) {
     document.body.classList.toggle("big", on);
-    var b = $("size-btn");
-    b.setAttribute("aria-pressed", String(on));
-    b.setAttribute("aria-label", on ? "Normal text" : "Bigger text");
-    b.querySelector(".lbl").textContent = on ? "Normal text" : "Bigger text";
+    $("size-btn").setAttribute("aria-checked", String(on));
     store("ffu-big", on ? "1" : "0");
     setTimeout(moveAll, 60);
   }
@@ -868,6 +937,7 @@ dialog#cook[open] { display: flex; flex-direction: column; animation: fade 0.35s
   function refreshAiUi() {
     $("ai-dot").classList.toggle("on", aiReady());
     $("ai-open-text").textContent = aiReady() ? cur().name : "Connect AI";
+    $("ai-status2").textContent = aiReady() ? cur().name + " is connected" : "Not connected yet";
   }
 
   function aiForm(box, onSaved, msgText) {
@@ -1085,10 +1155,19 @@ dialog#cook[open] { display: flex; flex-direction: column; animation: fade 0.35s
     });
   }
   QUICK.forEach(function (name) {
-    var b = h("button", { type: "button", class: "chip", "data-name": name, "aria-pressed": "false", text: name });
+    var b = h("button", { type: "button", class: "chip" + (QUICK.indexOf(name) >= 10 ? " more" : ""), "data-name": name, "aria-pressed": "false", text: name });
     b.onclick = function () { has(name) ? removeItem(name) : addItems([name]); };
     $("quick").appendChild(b);
   });
+  (function () {
+    var more = h("button", { type: "button", class: "chip toggle", "aria-expanded": "false", text: "Show more" });
+    more.onclick = function () {
+      var all = $("quick").classList.toggle("all");
+      more.textContent = all ? "Show less" : "Show more";
+      more.setAttribute("aria-expanded", String(all));
+    };
+    $("quick").appendChild(more);
+  })();
   function addTyped() {
     var parts = $("item-input").value.split(/[,\n;]+/).map(function (s) { return s.trim(); }).filter(Boolean);
     if (parts.length) addItems(parts);
@@ -1367,6 +1446,7 @@ dialog#cook[open] { display: flex; flex-direction: column; animation: fade 0.35s
     var res = $("results");
     res.textContent = "";
     $("go-row").classList.add("done");
+    sfx("ok");
     res.appendChild(h("h2", { text: "You can cook these in " + state.minutes + " minutes or less" }));
     var grid = h("div", { class: "grid" });
     state.dishes.forEach(function (d, i) { var c = dishCard(d, { kind: "ai" }); c.style.setProperty("--i", i); grid.appendChild(c); });
@@ -1674,8 +1754,22 @@ dialog#cook[open] { display: flex; flex-direction: column; animation: fade 0.35s
   $("t-back").onclick = function () { if (tour.i > 0) { tour.i -= 1; tour.dir = -1; renderTour(); } };
   $("t-skip").onclick = function () { finishTour(false); };
   $("tour").addEventListener("close", function () { store(TOURK, "1"); });
-  $("guide-btn").onclick = openTour;
-  $("guide-btn-2").onclick = openTour;
+  /* ---------- settings ---------- */
+  function paintSound() { $("snd-btn").setAttribute("aria-checked", String(soundOn)); }
+  paintSound();
+  $("set-open").onclick = function () { openDlg($("settings")); };
+  $("set-close").onclick = function () { closeDlg($("settings")); };
+  $("settings").addEventListener("click", function (e) { if (e.target === $("settings")) closeDlg($("settings")); });
+  $("snd-btn").onclick = function () { soundOn = !soundOn; store("ffu2-sound", soundOn ? "1" : "0"); paintSound(); if (soundOn) sfx("ok"); };
+  $("ai-open2").onclick = function () { closeDlg($("settings")); openAI(""); };
+  $("guide-btn").onclick = function () { closeDlg($("settings")); openTour(); };
+  $("size-btn").onclick = function () { setBig(!document.body.classList.contains("big")); };
+  function toggleFold() {
+    var f = $("fold-more"), open = f.classList.toggle("open");
+    $("fold-head").setAttribute("aria-expanded", String(open));
+  }
+  $("fold-head").onclick = toggleFold;
+  $("fold-head").addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleFold(); } });
 
   /* ---------- touch: swipe and light tap feedback ---------- */
   function swipe(el, onLeft, onRight) {
@@ -1691,7 +1785,14 @@ dialog#cook[open] { display: flex; flex-direction: column; animation: fade 0.35s
   swipe($("cook"), function () { if (ck.i < ck.steps.length - 1) $("ck-next").click(); }, function () { $("ck-back").click(); });
   swipe($("tour"), function () { if (tour.i < TOUR.length - 1) $("t-next").click(); }, function () { $("t-back").click(); });
   document.addEventListener("click", function (e) {
-    if (navigator.vibrate && e.target.closest && e.target.closest(".btn,.chip,.seg button,.tab,.tabbar a,.tabbar button,.provs button")) navigator.vibrate(6);
+    var t = e.target.closest ? e.target.closest("button,.btn,.tab,.tabbar a") : null;
+    if (!t || t.disabled) return;
+    var id = t.id, kind = "tap";
+    if (t.closest("#quick") || t.closest("#r-filters")) kind = "pop";
+    else if (t.closest(".mine")) kind = "soft";
+    else if (id === "ck-next" || id === "t-next" || id === "ck-back" || id === "t-back") kind = "step";
+    sfx(kind);
+    if (navigator.vibrate) navigator.vibrate(kind === "soft" ? 4 : 6);
   });
 
   /* ---------- start ---------- */
