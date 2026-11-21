@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Food For Us</title>
+<meta name="description" content="Tell us what is in your kitchen. Get easy Indian dishes, full recipes and simple swaps.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Mukta:wght@400;600;700&display=swap">
+<style>
+/* Layout: a deep green hero with a turmeric "plate" glowing behind it, then two calm columns (ingredients | time and choices), then dish cards. */
+:root {
+  --bg: #f3f6ef;
+  --surface: #ffffff;
+  --ink: #17261e;
+  --muted: #56675c;
+  --line: #d8dfd2;
+  --accent: #1d6b49;
+  --accent-ink: #ffffff;
+  --accent-soft: #e1f0e6;
+  --sun: #f0b429;
+  --sun-soft: #fcf0cc;
+  --sun-ink: #6b4a00;
+  --danger: #a73a1f;
+  --shadow: 0 1px 2px rgba(20, 50, 35, 0.06), 0 8px 24px rgba(20, 50, 35, 0.07);
+  --hero: #14402f;
+  --hero-ink: #f6f3e8;
+  --font-display: "Baloo 2", "Mukta", system-ui, sans-serif;
+  --font-body: "Mukta", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --fs: 19px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1813;
+    --surface: #18231c;
+    --ink: #edf3ea;
+    --muted: #a5b5aa;
+    --line: #2c3c32;
+    --accent: #5cc28d;
+    --accent-ink: #0b1a11;
+    --accent-soft: #1f3a2b;
+    --sun: #f2bd45;
+    --sun-soft: #3a2f12;
+    --sun-ink: #f5d78a;
+    --danger: #ff9a7a;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+    --hero: #0b2a1e;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs);
+  line-height: 1.5;
+}
+body.big { --fs: 23px; }
+h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.15; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--accent); }
+:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* ---------- hero ---------- */
+.hero {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--hero);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1.5px, transparent 1.6px);
+  background-size: 22px 22px;
+  color: var(--hero-ink);
+  padding-block: 18px 56px;
+  padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px));
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  right: -70px;
+  bottom: -150px;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  background: var(--sun);
+  opacity: 0.92;
+}
+.hero-in { position: relative; z-index: 1; max-width: 1040px; margin: 0 auto; }
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--hero-ink); text-decoration: none; font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; }
+.brand svg { width: 40px; height: 40px; color: var(--sun); flex: none; }
+.bar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.pillbtn { min-height: 46px; padding: 6px 16px; border-radius: 999px; border: 2px solid rgba(255, 255, 255, 0.35); background: rgba(255, 255, 255, 0.08); color: var(--hero-ink); font-weight: 700; display: inline-flex; align-items: center; gap: 8px; }
+.pillbtn:hover { background: rgba(255, 255, 255, 0.16); }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: #8a9a90; flex: none; }
+.dot.on { background: #6ee7a0; }
+.hero-copy { padding-top: 44px; max-width: 600px; display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+.eyebrow { font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.8rem; color: var(--sun); }
+.hero h1 { font-size: clamp(2.2rem, 6vw, 3.6rem); font-weight: 800; }
+.hero-copy p.lead { font-size: 1.1rem; opacity: 0.92; max-width: 46ch; }
+
+/* ---------- buttons, inputs ---------- */
+.btn { min-height: 54px; padding: 10px 22px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent); color: var(--accent-ink); font-weight: 700; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.btn.ghost { background: var(--surface); color: var(--accent); }
+.btn.sun { background: var(--sun); border-color: var(--sun); color: #2a1d00; font-family: var(--font-display); font-size: 1.15rem; }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+input[type="text"], input[type="password"] { min-height: 54px; padding: 10px 14px; border: 2px solid var(--line); border-radius: 12px; background: var(--bg); width: 100%; min-width: 0; }
+
+/* ---------- main ---------- */
+main { max-width: 1040px; margin: -28px auto 0; position: relative; z-index: 2; padding-block: 0 56px; padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 22px; }
+.cols { display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; align-items: start; }
+.col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 22px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.card-head { display: flex; align-items: center; gap: 12px; }
+.num { flex: none; width: 2.2rem; height: 2.2rem; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-family: var(--font-display); font-weight: 800; }
+.card-head h2 { font-size: 1.4rem; }
+.hint { color: var(--muted); font-size: 0.9em; }
+.label { font-weight: 700; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.row input { flex: 1 1 220px; }
+
+.photo-label { position: relative; }
+.photo-label input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.photo-label:focus-within { outline: 3px solid var(--sun); outline-offset: 2px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 2px solid var(--line); background: var(--bg); border-radius: 999px; padding: 6px 14px; min-height: 46px; }
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); font-weight: 600; }
+.mine { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; border-radius: 14px; background: var(--sun-soft); color: var(--sun-ink); min-height: 3.4rem; align-items: center; }
+.mine .item { display: inline-flex; align-items: center; gap: 6px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 4px 6px 4px 14px; font-weight: 600; }
+.mine .item button { border: 0; background: var(--bg); width: 38px; height: 38px; border-radius: 50%; font-size: 1.1em; line-height: 1; }
+
+.seg { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+.seg button { min-height: 66px; border: 2px solid var(--line); background: var(--bg); border-radius: 14px; font-weight: 700; font-size: 1.15em; }
+.seg button small { display: block; font-weight: 400; color: var(--muted); font-size: 0.7em; }
+.seg button[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }
+
+.opt { display: flex; align-items: center; gap: 12px; min-height: 52px; }
+.opt input[type="checkbox"] { width: 28px; height: 28px; accent-color: var(--accent); flex: none; }
+.opt label { flex: 1; min-width: 0; }
+.opt select { min-height: 48px; border: 2px solid var(--line); border-radius: 10px; background: var(--bg); padding: 4px 10px; }
+.langs { display: flex; gap: 10px; flex-wrap: wrap; }
+.langs button { min-height: 50px; border: 2px solid var(--line); background: var(--bg); border-radius: 12px; padding: 6px 20px; font-weight: 700; }
+.langs button[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }
+
+.go-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.go-row .btn { flex: 1 1 240px; min-height: 66px; font-size: 1.25rem; font-family: var(--font-display); }
+
+/* ---------- results ---------- */
+#results { display: flex; flex-direction: column; gap: 16px; min-width: 0; scroll-margin-top: 16px; }
+#results h2 { font-size: 1.7rem; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.note { padding: 14px 16px; border-radius: 14px; background: var(--sun-soft); color: var(--sun-ink); }
+.note.bad { background: var(--surface); border: 2px solid var(--danger); color: var(--danger); }
+.thinking { display: flex; align-items: center; gap: 14px; padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
+.spin { width: 28px; height: 28px; border: 4px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.9s linear infinite; flex: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation-duration: 3s; } }
+
+.dish { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); overflow: hidden; min-width: 0; }
+.dish-top { padding: 18px; display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; }
+.mins { width: 4.6rem; padding: 8px 4px; border-radius: 14px; background: var(--sun-soft); color: var(--sun-ink); text-align: center; font-family: var(--font-display); font-weight: 800; line-height: 1; }
+.mins b { display: block; font-size: 1.9rem; font-variant-numeric: tabular-nums; }
+.mins span { font-size: 0.8rem; font-weight: 600; }
+.dish-main { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.dish-main h3 { font-size: 1.35rem; }
+.pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { padding: 2px 12px; border-radius: 999px; font-size: 0.85em; font-weight: 700; border: 1px solid var(--line); background: var(--bg); }
+.pill.ok { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.pill.miss { background: var(--sun-soft); border-color: var(--sun); color: var(--sun-ink); }
+.dish-actions { padding: 0 18px 18px; }
+.dish-actions .btn { width: 100%; }
+.recipe { border-top: 1px dashed var(--line); padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+.recipe h4 { font-size: 1.1rem; margin-bottom: 6px; }
+.recipe ul, .recipe ol { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 6px; }
+.recipe ol li { padding-left: 4px; }
+.swap { background: var(--sun-soft); color: var(--sun-ink); border-radius: 14px; padding: 12px 14px; }
+.nutri { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.nutri div { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 6px; text-align: center; }
+.nutri b { display: block; font-family: var(--font-display); font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+.nutri span { font-size: 0.8em; color: var(--muted); }
+
+footer { max-width: 1040px; margin: 0 auto; padding: 0 16px 40px; color: var(--muted); font-size: 0.85em; text-align: center; }
+
+/* ---------- key dialog ---------- */
+dialog { border: 0; border-radius: 22px; padding: 0; background: var(--surface); color: var(--ink); width: min(520px, calc(100vw - 24px)); max-height: calc(100vh - 24px); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35); }
+dialog::backdrop { background: rgba(8, 24, 16, 0.65); }
+.kd { padding: 26px 24px; display: flex; flex-direction: column; gap: 14px; }
+.kd h2 { font-size: 1.7rem; }
+.kd ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 4px; }
+.kd summary { cursor: pointer; font-weight: 700; min-height: 40px; display: flex; align-items: center; }
+.kd-msg { min-height: 1.4em; color: var(--danger); font-weight: 600; }
+.kd-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.kd-actions .btn { flex: 1 1 160px; }
+.link-btn { background: none; border: 0; padding: 6px 0; color: var(--danger); text-decoration: underline; align-self: flex-start; min-height: 44px; }
+
+@media (max-width: 800px) {
+  .cols { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: 1fr; }
+  .hero::after { width: 240px; height: 240px; right: -90px; bottom: -110px; opacity: 0.5; }
+  .hero-copy { padding-top: 32px; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero" id="top">
+  <div class="hero-in">
+    <nav class="bar" aria-label="Main">
+      <a class="brand" href="#top" aria-label="Food For Us, home">
+        <svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 24h36c0 10-8 17-18 17S6 34 6 24z" fill="currentColor" stroke="none"/>
+          <path d="M17 17c-3-3 3-5 0-9M24 17c-3-3 3-5 0-9M31 17c-3-3 3-5 0-9"/>
+        </svg>
+        <span>Food For Us</span>
+      </a>
+      <div class="bar-actions">
+        <button type="button" class="pillbtn" id="size-btn" aria-pressed="false">Bigger text</button>
+        <button type="button" class="pillbtn" id="key-open"><span class="dot" id="key-dot"></span><span id="key-open-text">Add Gemini key</span></button>
+      </div>
+    </nav>
+    <div class="hero-copy">
+      <p class="eyebrow">Your kitchen, your ingredients</p>
+      <h1>What shall we cook today?</h1>
+      <p class="lead">Tell us what you have at home. Get easy Indian dishes, full recipes and simple swaps for anything that is missing.</p>
+      <a class="btn sun" href="#start">Let us begin</a>
+    </div>
+  </div>
+</header>
+
+<main id="start">
+  <div class="cols">
+    <div class="col">
+      <section class="card" aria-labelledby="h-items">
+        <div class="card-head"><span class="num">1</span><h2 id="h-items">What do you have at home?</h2></div>
+        <div class="row">
+          <input type="text" id="item-input" placeholder="Type here, for example: 2 potato, 1 cup rice" autocomplete="off" enterkeyhint="done" aria-label="Type ingredients, separated by commas">
+          <button type="button" class="btn" id="add-btn">Add</button>
+        </div>
+        <div>
+          <label class="btn ghost photo-label" for="photo-input">Add a photo of your ingredients
+            <input type="file" id="photo-input" accept="image/*" multiple>
+          </label>
+          <p class="hint" id="photo-status" role="status" style="margin-top:8px"></p>
+        </div>
+        <p class="label">Tap to add common items</p>
+        <div class="chips" id="quick" role="group" aria-label="Common ingredients"></div>
+        <p class="label">Your list</p>
+        <div class="mine" id="mine" aria-live="polite"></div>
+      </section>
+    </div>
+
+    <div class="col">
+      <section class="card" aria-labelledby="h-time">
+        <div class="card-head"><span class="num">2</span><h2 id="h-time">How much time do you have?</h2></div>
+        <div class="seg" id="time" role="radiogroup" aria-label="Cooking time"></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-more">
+        <div class="card-head"><span class="num">3</span><h2 id="h-more">Extra choices <span class="hint">(optional)</span></h2></div>
+        <div class="opt"><input type="checkbox" id="veg"><label for="veg">Only vegetarian dishes</label></div>
+        <div class="opt"><input type="checkbox" id="nutri"><label for="nutri">Show protein, calories and carbs</label></div>
+        <p class="hint" id="nutri-hint" hidden>Numbers are a rough guess for one person. They use the quantities you typed, so add amounts like "2 potato" or "1 cup dal" for a better guess.</p>
+        <div class="opt">
+          <label for="people">Cooking for how many people?</label>
+          <select id="people"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>8</option></select>
+        </div>
+        <div>
+          <p class="label" id="lang-label" style="margin-bottom:8px">Recipe language</p>
+          <div class="langs" id="langs" role="radiogroup" aria-labelledby="lang-label">
+            <button type="button" role="radio" aria-checked="true" data-lang="en">English</button>
+            <button type="button" role="radio" aria-checked="false" data-lang="hi">हिन्दी</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="go-row">
+    <button type="button" class="btn" id="go">What can I cook?</button>
+    <button type="button" class="btn ghost" id="stop" hidden>Stop</button>
+  </div>
+
+  <div id="results" aria-live="polite"></div>
+</main>
+
+<footer>Food For Us uses Google Gemini. Dish ideas and nutrition numbers are only a guide. Please check that ingredients are fresh and safe, and check for allergies.</footer>
+
+<dialog id="key-dialog" aria-labelledby="kd-title">
+  <div class="kd">
+    <h2 id="kd-title">Welcome to Food For Us</h2>
+    <p>To suggest dishes, this website uses Google Gemini. Please add your free Gemini key to begin.</p>
+    <ol>
+      <li><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Open Google AI Studio</a> and create a free key.</li>
+      <li>Copy the key and paste it below.</li>
+    </ol>
+    <div>
+      <label class="label" for="key-input" style="display:block;margin-bottom:6px">Your Gemini key</label>
+      <input type="password" id="key-input" placeholder="Paste your key here" autocomplete="off">
+    </div>
+    <p class="kd-msg" id="key-msg" role="alert"></p>
+    <details class="kd-adv">
+      <summary>Advanced</summary>
+      <label class="hint" for="model-input" style="display:block;margin:6px 0">Gemini model name</label>
+      <input type="text" id="model-input" autocomplete="off">
+    </details>
+    <p class="hint">The key is saved only in this browser and is sent only to Google. Please do not share this page after saving your key.</p>
+    <div class="kd-actions">
+      <button type="button" class="btn" id="key-save">Save and start</button>
+      <button type="button" class="btn ghost" id="key-skip">Not now</button>
+    </div>
+    <button type="button" class="link-btn" id="key-remove" hidden>Remove the saved key</button>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  var QUICK = ["Onion","Tomato","Potato","Rice","Atta (wheat flour)","Toor dal","Moong dal","Paneer","Eggs","Curd","Milk","Spinach","Cauliflower","Peas","Carrot","Capsicum","Besan","Poha","Suji (rava)","Bread","Green chilli","Ginger","Garlic","Lemon"];
+  var TIMES = [[10,"Very quick"],[20,"Quick"],[30,"Relaxed"],[45,"Slow and easy"]];
+  var GKEY = "ffu-gemini-key", GMODEL = "ffu-gemini-model", DEFAULT_MODEL = "gemini-3.5-flash";
+  var state = { items: [], minutes: 20, lang: "en", dishes: null, busy: false, ctl: null, askedNutri: false };
+  var $ = function (id) { return document.getElementById(id); };
+
+  function h(tag, props) {
+    var el = document.createElement(tag);
+    if (props) for (var k in props) {
+      if (k === "text") el.textContent = props[k];
+      else if (k === "class") el.className = props[k];
+      else el.setAttribute(k, props[k]);
+    }
+    for (var i = 2; i < arguments.length; i++) {
+      var c = arguments[i];
+      if (c == null || c === false) continue;
+      el.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+    }
+    return el;
+  }
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) {} return null; }
+  function norm(s) { return s.toLowerCase().replace(/\s+/g, " ").trim(); }
+  function pretty(s) { s = s.trim(); return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  /* ---------- text size ---------- */
+  function setBig(on) {
+    document.body.classList.toggle("big", on);
+    $("size-btn").setAttribute("aria-pressed", String(on));
+    $("size-btn").textContent = on ? "Normal text" : "Bigger text";
+    store("ffu-big", on ? "1" : "0");
+  }
+  $("size-btn").onclick = function () { setBig(!document.body.classList.contains("big")); };
+  setBig(store("ffu-big") === "1");
+
+  /* ---------- Gemini key ---------- */
+  function gemKey() { return (store(GKEY) || "").trim(); }
+  function gemModel() { return (store(GMODEL) || DEFAULT_MODEL).trim() || DEFAULT_MODEL; }
+  var dlg = $("key-dialog");
+  function refreshKeyUi() {
+    var on = !!gemKey();
+    $("key-dot").classList.toggle("on", on);
+    $("key-open-text").textContent = on ? "Gemini key saved" : "Add Gemini key";
+    $("key-remove").hidden = !on;
+    $("kd-title").textContent = on ? "Your Gemini key" : "Welcome to Food For Us";
+    $("key-skip").textContent = on ? "Close" : "Not now";
+  }
+  function openKey(msg) {
+    $("key-msg").textContent = msg || "";
+    $("model-input").value = gemModel();
+    var adv = dlg.querySelector(".kd-adv");
+    if (adv) adv.open = /model name/i.test(msg || "");
+    refreshKeyUi();
+    if (dlg.open) return;
+    if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", "");
+    $("key-input").focus();
+  }
+  function closeKey() {
+    if (typeof dlg.close === "function") dlg.close(); else dlg.removeAttribute("open");
+  }
+  $("key-open").onclick = function () { openKey(""); };
+  $("key-skip").onclick = closeKey;
+  $("key-save").onclick = function () {
+    var k = $("key-input").value.trim();
+    if (!k) { $("key-msg").textContent = "Please paste your key first."; $("key-input").focus(); return; }
+    store(GKEY, k);
+    store(GMODEL, $("model-input").value.trim() || DEFAULT_MODEL);
+    $("key-input").value = "";
+    refreshKeyUi();
+    closeKey();
+  };
+  $("key-remove").onclick = function () {
+    store(GKEY, "");
+    $("key-input").value = "";
+    refreshKeyUi();
+    $("key-msg").textContent = "The key was removed from this browser.";
+  };
+  $("key-input").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); $("key-save").click(); } });
+  refreshKeyUi();
+  if (!gemKey()) openKey("");
+
+  async function toB64(file) {
+    var bmp = await createImageBitmap(file);
+    var k = Math.min(1, 1280 / Math.max(bmp.width, bmp.height));
+    var c = document.createElement("canvas");
+    c.width = Math.round(bmp.width * k);
+    c.height = Math.round(bmp.height * k);
+    c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+    return c.toDataURL("image/jpeg", 0.85).split(",")[1];
+  }
+  var API = "https://generativelanguage.googleapis.com/v1beta/";
+  async function http(url, init) {
+    var r;
+    try { r = await fetch(url, init); }
+    catch (e) {
+      if (e && e.name === "AbortError") throw { code: "cancelled" };
+      throw { code: "network" };
+    }
+    if (!r.ok) {
+      var j = null;
+      try { j = await r.json(); } catch (e) {}
+      var er = (j && j.error) || {};
+      var reason = "";
+      (er.details || []).forEach(function (d) { if (d && d.reason && !reason) reason = d.reason; });
+      throw { code: "http_" + r.status, detail: String(er.message || ""), reason: reason };
+    }
+    return r.json();
+  }
+  function isKeyError(e) {
+    var c = e && e.code;
+    return c === "http_401" || c === "http_403" || (e && e.reason === "API_KEY_INVALID") || /api key/i.test((e && e.detail) || "");
+  }
+  /* asks Google which models this key can use and picks the newest Flash model */
+  async function pickModel(signal) {
+    var data = await http(API + "models?pageSize=200", { headers: { "x-goog-api-key": gemKey() }, signal: signal });
+    var best = null, bestScore = -1;
+    (data.models || []).forEach(function (m) {
+      var name = String(m.name || "").replace(/^models\//, "");
+      var ok = (m.supportedGenerationMethods || []).indexOf("generateContent") >= 0;
+      if (!ok || !/flash/i.test(name)) return;
+      if (/lite|image|tts|live|audio|embed|robot|computer|veo|imagen|thinking|learnlm|gemma/i.test(name)) return;
+      var v = name.match(/(\d+(?:\.\d+)?)/);
+      var score = name === "gemini-flash-latest" ? 1000 : (v ? parseFloat(v[1]) : 0) * 10 - (/preview|exp/i.test(name) ? 1 : 0);
+      if (score > bestScore) { bestScore = score; best = name; }
+    });
+    return best;
+  }
+  async function generate(model, parts, signal) {
+    var data = await http(API + "models/" + encodeURIComponent(model) + ":generateContent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": gemKey() },
+      body: JSON.stringify({ contents: [{ parts: parts }], generationConfig: { responseMimeType: "application/json" } }),
+      signal: signal
+    });
+    var cand = data.candidates && data.candidates[0];
+    var t = cand && cand.content && cand.content.parts ? cand.content.parts.map(function (p) { return p.text || ""; }).join("") : "";
+    if (!t) throw { code: "empty" };
+    try { return JSON.parse(t); }
+    catch (e) {
+      var m = t.match(/[\[{][\s\S]*[\]}]/);
+      if (m) { try { return JSON.parse(m[0]); } catch (e2) {} }
+      throw { code: "empty" };
+    }
+  }
+  async function gemini(prompt, opts) {
+    var parts = [{ text: prompt }];
+    var files = (opts && opts.images) || [];
+    for (var i = 0; i < files.length; i++) {
+      try { parts.push({ inline_data: { mime_type: "image/jpeg", data: await toB64(files[i]) } }); }
+      catch (e) { throw { code: "image_rejected" }; }
+    }
+    var signal = opts && opts.signal;
+    try {
+      return await generate(gemModel(), parts, signal);
+    } catch (e) {
+      var modelProblem = e && (e.code === "http_404" || e.code === "http_400") && !isKeyError(e);
+      if (!modelProblem) throw e;
+      var pick = null;
+      try { pick = await pickModel(signal); }
+      catch (e2) { if (e2 && e2.code === "cancelled") throw e2; }
+      if (!pick || pick === gemModel()) throw e;
+      var out = await generate(pick, parts, signal);
+      store(GMODEL, pick);
+      return out;
+    }
+  }
+  /* returns {text, keyProblem} */
+  function errInfo(e) {
+    var c = e && e.code;
+    if (isKeyError(e)) return { text: "Gemini did not accept the key. Please copy it again from Google AI Studio and paste it with no spaces.", keyProblem: true };
+    if (c === "http_400" || c === "http_404") return { text: "Gemini could not use this request." + (e.detail ? " Google says: " + e.detail.slice(0, 220) : "") + " You can change the model name under Advanced.", keyProblem: true };
+    if (c === "http_429") return { text: "Gemini says there were too many requests, or the free limit is used up. Please wait a minute and try again." };
+    if (c === "http_500" || c === "http_503") return { text: "Google's service is busy right now. Please try again in a minute." };
+    if (c === "network") return { text: "Could not reach Google. Please check the internet connection and try again." };
+    if (c === "image_rejected") return { text: "That photo could not be read. Please try a different photo." };
+    return { text: "Something went wrong. Please tap the button to try again." };
+  }
+
+  /* ---------- ingredients ---------- */
+  function has(name) { var k = norm(name); return state.items.some(function (i) { return norm(i) === k; }); }
+  function addItems(list) {
+    list.forEach(function (raw) {
+      var s = String(raw).trim();
+      if (s && s.length < 80 && !has(s)) state.items.push(pretty(s));
+    });
+    renderItems();
+  }
+  function removeItem(name) {
+    var k = norm(name);
+    state.items = state.items.filter(function (i) { return norm(i) !== k; });
+    renderItems();
+  }
+  function renderItems() {
+    var box = $("mine");
+    box.textContent = "";
+    if (!state.items.length) box.appendChild(h("span", { text: "Nothing added yet. Type above, tap an item below, or add a photo." }));
+    state.items.forEach(function (name) {
+      var b = h("button", { type: "button", "aria-label": "Remove " + name, text: "×" });
+      b.onclick = function () { removeItem(name); };
+      box.appendChild(h("span", { class: "item" }, name, b));
+    });
+    Array.prototype.forEach.call($("quick").children, function (c) {
+      c.setAttribute("aria-pressed", String(has(c.dataset.name)));
+    });
+  }
+  QUICK.forEach(function (name) {
+    var b = h("button", { type: "button", class: "chip", "data-name": name, "aria-pressed": "false", text: name });
+    b.onclick = function () { has(name) ? removeItem(name) : addItems([name]); };
+    $("quick").appendChild(b);
+  });
+  function addTyped() {
+    var parts = $("item-input").value.split(/[,\n;]+/).map(function (s) { return s.trim(); }).filter(Boolean);
+    if (parts.length) addItems(parts);
+    $("item-input").value = "";
+    $("item-input").focus();
+  }
+  $("add-btn").onclick = addTyped;
+  $("item-input").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); addTyped(); } });
+
+  /* ---------- time and options ---------- */
+  function renderTime() {
+    var box = $("time");
+    box.textContent = "";
+    TIMES.forEach(function (t) {
+      var b = h("button", { type: "button", role: "radio", "aria-checked": String(state.minutes === t[0]) }, t[0] + " min", h("small", { text: t[1] }));
+      b.onclick = function () { state.minutes = t[0]; renderTime(); };
+      box.appendChild(b);
+    });
+  }
+  renderTime();
+  $("nutri").onchange = function () { $("nutri-hint").hidden = !$("nutri").checked; };
+  Array.prototype.forEach.call($("langs").children, function (b) {
+    b.onclick = function () {
+      state.lang = b.dataset.lang;
+      Array.prototype.forEach.call($("langs").children, function (x) { x.setAttribute("aria-checked", String(x === b)); });
+    };
+  });
+
+  /* ---------- photo ---------- */
+  $("photo-input").addEventListener("click", function (e) {
+    if (!gemKey()) { e.preventDefault(); openKey("Please add your Gemini key to read photos."); }
+  });
+  $("photo-input").onchange = async function () {
+    var input = $("photo-input");
+    var files = Array.prototype.slice.call(input.files || [], 0, 4);
+    if (!files.length) return;
+    var st = $("photo-status");
+    st.textContent = "Looking at your photo. This can take a few seconds...";
+    try {
+      var out = await gemini(
+        "These photos show food ingredients in an Indian home kitchen. List the ingredients you can clearly see, using common simple English names (for example onion, tomato, atta, toor dal, paneer). Reply with only a JSON array of short strings, such as [\"onion\",\"tomato\"]. Leave out anything that is not food.",
+        { images: files }
+      );
+      var arr = Array.isArray(out) ? out.filter(function (x) { return typeof x === "string"; }) : [];
+      if (arr.length) { addItems(arr); st.textContent = "Added " + arr.length + " items from your photo. Please check your list and remove anything wrong."; }
+      else st.textContent = "No ingredients found in that photo. Try a closer, brighter photo, or type them in.";
+    } catch (e) {
+      var info = errInfo(e);
+      st.textContent = info.text;
+      if (info.keyProblem) openKey(info.text);
+    }
+    input.value = "";
+  };
+
+  /* ---------- ask for dishes ---------- */
+  function buildPrompt() {
+    var n = $("people").value;
+    var wantN = $("nutri").checked;
+    return [
+      "You are a friendly Indian home-cooking helper for a family. Write in very simple, short sentences that an elderly person can follow.",
+      "Ingredients at home (quantities are included when the family typed them): " + state.items.join(", ") + ".",
+      "Always available in an Indian kitchen, so never list these as missing: salt, water, cooking oil, ghee, turmeric, red chilli powder, cumin, coriander powder, garam masala, mustard seeds, sugar.",
+      "Total time allowed, including preparing and cooking: " + state.minutes + " minutes at most.",
+      "Cooking for " + n + " people.",
+      $("veg").checked ? "Vegetarian dishes only. No meat, fish or eggs." : "Vegetarian or non-vegetarian is fine, but prefer dishes that match the ingredients.",
+      "Suggest 4 different, normal everyday Indian home dishes (sabzi, dal, rice, roti or paratha, breakfast or snack, depending on what fits). Prefer dishes that need nothing extra. A dish may need 1 or 2 missing items, but then give an easy swap using something common in an Indian home, or say it can be skipped. Use the real quantities in the ingredient list when given. Every dish must really finish within the time limit.",
+      "Write all text values in " + (state.lang === "hi" ? "Hindi (Devanagari script), with the dish name in Hindi and the common English name in brackets" : "English") + ".",
+      "Reply with only a JSON array of 4 objects. Each object has these fields: name (string), about (one short line), minutes (number, total time), ingredients (array of strings with quantity for " + n + " people, for example \"3 medium potatoes\"), missing (array of objects with item and instead, empty array if nothing is missing), steps (array of 4 to 8 short steps)" + (wantN ? ", nutrition (object with calories, protein_g, carbs_g as numbers for ONE serving, worked out from the ingredient quantities)." : ".")
+    ].join("\n");
+  }
+  function setBusy(on) {
+    state.busy = on;
+    $("go").disabled = on;
+    $("stop").hidden = !on;
+  }
+  async function suggest() {
+    var res = $("results");
+    if (state.busy) return;
+    if (!state.items.length) {
+      res.textContent = "";
+      res.appendChild(h("div", { class: "note", text: "Please add at least one ingredient first. Tap items in step 1 or type them." }));
+      res.scrollIntoView({ block: "start" });
+      $("item-input").focus();
+      return;
+    }
+    if (!gemKey()) { openKey("Please add your Gemini key to see dishes."); return; }
+    state.askedNutri = $("nutri").checked;
+    res.textContent = "";
+    res.appendChild(h("div", { class: "thinking" }, h("div", { class: "spin" }), h("p", { text: "Finding dishes you can cook. This can take up to a minute." })));
+    res.scrollIntoView({ block: "start" });
+    setBusy(true);
+    state.ctl = new AbortController();
+    try {
+      var out = await gemini(buildPrompt(), { signal: state.ctl.signal });
+      var dishes = Array.isArray(out) ? out : (out && Array.isArray(out.dishes) ? out.dishes : []);
+      dishes = dishes.filter(function (d) { return d && typeof d.name === "string"; });
+      if (!dishes.length) throw { code: "empty" };
+      state.dishes = dishes;
+      renderDishes();
+    } catch (e) {
+      res.textContent = "";
+      if (e && e.code !== "cancelled") {
+        var info = errInfo(e);
+        res.appendChild(h("div", { class: "note bad", text: info.text }));
+        if (info.keyProblem) openKey(info.text);
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+  $("go").onclick = suggest;
+  $("stop").onclick = function () { if (state.ctl) state.ctl.abort(); };
+
+  /* ---------- show dishes ---------- */
+  function num(v) { var n = Math.round(Number(v)); return isFinite(n) ? String(n) : "-"; }
+  function list(tag, arr) {
+    var el = h(tag);
+    (Array.isArray(arr) ? arr : []).forEach(function (s) { el.appendChild(h("li", { text: String(s) })); });
+    return el;
+  }
+  function renderDishes() {
+    var res = $("results");
+    res.textContent = "";
+    res.appendChild(h("h2", { text: "You can cook these in " + state.minutes + " minutes or less" }));
+    var grid = h("div", { class: "grid" });
+    state.dishes.forEach(function (d, idx) {
+      var missing = Array.isArray(d.missing) ? d.missing.filter(function (m) { return m && m.item; }) : [];
+      var pills = h("div", { class: "pills" },
+        missing.length
+          ? h("span", { class: "pill miss", text: "Missing " + missing.length + (missing.length === 1 ? " item" : " items") })
+          : h("span", { class: "pill ok", text: "You have everything" })
+      );
+      var recipe = h("div", { class: "recipe", id: "recipe-" + idx, hidden: "" });
+      recipe.appendChild(h("div", null, h("h4", { text: "Ingredients" }), list("ul", d.ingredients)));
+      if (missing.length) {
+        var ul = h("ul");
+        missing.forEach(function (m) {
+          ul.appendChild(h("li", null, h("b", { text: String(m.item) }), m.instead ? " → " + String(m.instead) : ""));
+        });
+        recipe.appendChild(h("div", { class: "swap" }, h("h4", { text: "If something is missing" }), ul));
+      }
+      recipe.appendChild(h("div", null, h("h4", { text: "How to make it" }), list("ol", d.steps)));
+      if (state.askedNutri && d.nutrition && typeof d.nutrition === "object") {
+        var n = d.nutrition;
+        recipe.appendChild(h("div", null,
+          h("h4", { text: "Rough nutrition for one person" }),
+          h("div", { class: "nutri" },
+            h("div", null, h("b", { text: num(n.calories) }), h("span", { text: "calories" })),
+            h("div", null, h("b", { text: num(n.protein_g) + " g" }), h("span", { text: "protein" })),
+            h("div", null, h("b", { text: num(n.carbs_g) + " g" }), h("span", { text: "carbs" }))
+          ),
+          h("p", { class: "hint", style: "margin-top:8px", text: "This is an estimate, not exact." })
+        ));
+      }
+      var btn = h("button", { type: "button", class: "btn ghost", "aria-expanded": "false", "aria-controls": "recipe-" + idx, text: "See recipe" });
+      btn.onclick = function () {
+        var open = recipe.hidden;
+        recipe.hidden = !open;
+        btn.setAttribute("aria-expanded", String(open));
+        btn.textContent = open ? "Hide recipe" : "See recipe";
+      };
+      grid.appendChild(h("article", { class: "dish" },
+        h("div", { class: "dish-top" },
+          h("div", { class: "mins" }, h("b", { text: num(d.minutes) }), h("span", { text: "min" })),
+          h("div", { class: "dish-main" }, h("h3", { text: d.name }), d.about ? h("p", { text: String(d.about) }) : null, pills)
+        ),
+        h("div", { class: "dish-actions" }, btn),
+        recipe
+      ));
+    });
+    res.appendChild(grid);
+    res.appendChild(h("p", { class: "hint", text: "Not what you wanted? Change your list or time and tap \"What can I cook?\" again." }));
+  }
+
+  renderItems();
+})();
+</script>
+</body>
+</html>
