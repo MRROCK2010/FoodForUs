@@ -413,6 +413,38 @@ dialog#cook[open] { display: flex; flex-direction: column; animation: fade 0.35s
   .three { gap: 8px; }
   .dish-actions { grid-template-columns: 1fr; }
 }
+/* ---------- extra phone polish ---------- */
+@media (max-width: 800px) {
+  .topbar { padding-inline: 10px; }
+  .topbar-in { border-radius: 20px; padding: 6px 6px 6px 10px; gap: 8px; }
+  #guide-btn { display: none; }
+  #ai-open-text { max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .iconbtn { min-height: 44px; border-radius: 14px; }
+  .hero { padding: 24px 20px 26px; gap: 10px; }
+  .hero h1 { font-size: 2rem; }
+  .hero .lead { font-size: 1rem; }
+  .page-head > div, .page-head .btn { flex: 1 1 100%; }
+  #r-filters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -16px; padding-inline: 16px; scroll-snap-type: x proximity; }
+  #r-filters::-webkit-scrollbar { display: none; }
+  #r-filters .chip { flex: none; scroll-snap-align: start; }
+  .row #add-btn { flex: 0 0 auto; padding-inline: 22px; }
+  .row input { flex: 1 1 0; }
+  .dish-actions { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .backup .row { flex: 1 1 100% !important; }
+  .backup .row .btn { flex: 1 1 100%; }
+  .sheet::before { content: ""; align-self: center; width: 44px; height: 5px; border-radius: 99px; background: var(--line); margin: -10px 0 2px; }
+  input[type="text"], input[type="password"], input[type="number"], input[type="search"], select, textarea { font-size: 16px; }
+  .go-row .btn { min-height: 62px; }
+  .ck-nav .btn { min-height: 68px; }
+  .ck-step { font-size: clamp(1.5rem, 6.4vw, 2.2rem); }
+  .tour-nav { position: sticky; bottom: 0; padding-top: 8px; background: var(--surface); }
+  .tour-slide h2 { font-size: 1.7rem; }
+}
+@media (max-width: 800px) and (max-height: 700px) {
+  .tour { grid-template-rows: 110px 1fr; }
+  .tour-art > div { transform: scale(0.55); }
+}
+@media (max-width: 360px) { .dish-actions { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -1644,6 +1676,23 @@ dialog#cook[open] { display: flex; flex-direction: column; animation: fade 0.35s
   $("tour").addEventListener("close", function () { store(TOURK, "1"); });
   $("guide-btn").onclick = openTour;
   $("guide-btn-2").onclick = openTour;
+
+  /* ---------- touch: swipe and light tap feedback ---------- */
+  function swipe(el, onLeft, onRight) {
+    var x0 = null, y0 = 0;
+    el.addEventListener("touchstart", function (e) { var t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; }, { passive: true });
+    el.addEventListener("touchend", function (e) {
+      if (x0 == null) return;
+      var t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0;
+      x0 = null;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) { if (dx < 0) onLeft(); else onRight(); }
+    }, { passive: true });
+  }
+  swipe($("cook"), function () { if (ck.i < ck.steps.length - 1) $("ck-next").click(); }, function () { $("ck-back").click(); });
+  swipe($("tour"), function () { if (tour.i < TOUR.length - 1) $("t-next").click(); }, function () { $("t-back").click(); });
+  document.addEventListener("click", function (e) {
+    if (navigator.vibrate && e.target.closest && e.target.closest(".btn,.chip,.seg button,.tab,.tabbar a,.tabbar button,.provs button")) navigator.vibrate(6);
+  });
 
   /* ---------- start ---------- */
   renderItems();
