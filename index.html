@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Food For Us</title>
 <meta name="description" content="Tell us what is in your kitchen. Get easy Indian dishes, full recipes and simple swaps.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -201,11 +201,49 @@ dialog::backdrop { background: rgba(8, 24, 16, 0.65); }
 .kd-actions .btn { flex: 1 1 160px; }
 .link-btn { background: none; border: 0; padding: 6px 0; color: var(--danger); text-decoration: underline; align-self: flex-start; min-height: 44px; }
 
+html { -webkit-text-size-adjust: 100%; }
+body { -webkit-tap-highlight-color: transparent; }
+button { touch-action: manipulation; }
+.dish-main h3, .recipe li, .mine .item, .note { overflow-wrap: anywhere; }
+dialog { overflow-y: auto; overscroll-behavior: contain; max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); }
+.go-row.done { position: static; background: none; }
+
 @media (max-width: 800px) {
   .cols { grid-template-columns: 1fr; }
   .grid { grid-template-columns: 1fr; }
+  .hero { padding-block: calc(14px + env(safe-area-inset-top, 0px)) 44px; }
   .hero::after { width: 240px; height: 240px; right: -90px; bottom: -110px; opacity: 0.5; }
-  .hero-copy { padding-top: 32px; }
+  .hero-copy { padding-top: 24px; gap: 14px; }
+  .brand { font-size: 1.3rem; }
+  .brand svg { width: 34px; height: 34px; }
+  .bar-actions { width: 100%; }
+  .pillbtn { flex: 1 1 0; justify-content: center; }
+  main { margin-top: -20px; gap: 16px; padding-block-end: 40px; }
+  .cols, .col { gap: 16px; }
+  .card { padding: 18px 16px; border-radius: 18px; }
+  .row .btn { flex: 1 1 100%; }
+  .seg { grid-template-columns: repeat(2, 1fr); }
+  .dish-top { padding: 16px; gap: 12px; }
+  .dish-actions { padding: 0 16px 16px; }
+  .recipe { padding: 16px; }
+  .go-row {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    padding-block: 10px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(to top, var(--bg) 75%, transparent);
+  }
+  .go-row.done { position: static; background: none; padding-block: 0; }
+  dialog { margin: auto auto 0; width: 100%; max-width: 100%; border-radius: 22px 22px 0 0; max-height: calc(100vh - 12px); max-height: calc(100dvh - 12px); }
+  .kd { padding: 22px 18px calc(22px + env(safe-area-inset-bottom, 0px)); }
+  footer { padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (max-width: 380px) {
+  :root { --fs: 18px; }
+  body.big { --fs: 21px; }
+  .mins { width: 3.7rem; }
+  .mins b { font-size: 1.6rem; }
+  .seg button { font-size: 1.05em; }
 }
 </style>
 </head>
@@ -223,7 +261,7 @@ dialog::backdrop { background: rgba(8, 24, 16, 0.65); }
       </a>
       <div class="bar-actions">
         <button type="button" class="pillbtn" id="size-btn" aria-pressed="false">Bigger text</button>
-        <button type="button" class="pillbtn" id="key-open"><span class="dot" id="key-dot"></span><span id="key-open-text">Add Gemini key</span></button>
+        <button type="button" class="pillbtn" id="key-open"><span class="dot" id="key-dot"></span><span id="key-open-text">Add key</span></button>
       </div>
     </nav>
     <div class="hero-copy">
@@ -250,10 +288,10 @@ dialog::backdrop { background: rgba(8, 24, 16, 0.65); }
           </label>
           <p class="hint" id="photo-status" role="status" style="margin-top:8px"></p>
         </div>
-        <p class="label">Tap to add common items</p>
-        <div class="chips" id="quick" role="group" aria-label="Common ingredients"></div>
         <p class="label">Your list</p>
         <div class="mine" id="mine" aria-live="polite"></div>
+        <p class="label">Tap to add common items</p>
+        <div class="chips" id="quick" role="group" aria-label="Common ingredients"></div>
       </section>
     </div>
 
@@ -363,7 +401,7 @@ dialog::backdrop { background: rgba(8, 24, 16, 0.65); }
   function refreshKeyUi() {
     var on = !!gemKey();
     $("key-dot").classList.toggle("on", on);
-    $("key-open-text").textContent = on ? "Gemini key saved" : "Add Gemini key";
+    $("key-open-text").textContent = on ? "Key saved" : "Add key";
     $("key-remove").hidden = !on;
     $("kd-title").textContent = on ? "Your Gemini key" : "Welcome to Food For Us";
     $("key-skip").textContent = on ? "Close" : "Not now";
@@ -376,7 +414,7 @@ dialog::backdrop { background: rgba(8, 24, 16, 0.65); }
     refreshKeyUi();
     if (dlg.open) return;
     if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", "");
-    $("key-input").focus();
+    if (window.matchMedia && matchMedia("(hover: hover)").matches) $("key-input").focus();
   }
   function closeKey() {
     if (typeof dlg.close === "function") dlg.close(); else dlg.removeAttribute("open");
@@ -654,6 +692,7 @@ dialog::backdrop { background: rgba(8, 24, 16, 0.65); }
   function renderDishes() {
     var res = $("results");
     res.textContent = "";
+    document.querySelector(".go-row").classList.add("done");
     res.appendChild(h("h2", { text: "You can cook these in " + state.minutes + " minutes or less" }));
     var grid = h("div", { class: "grid" });
     state.dishes.forEach(function (d, idx) {
