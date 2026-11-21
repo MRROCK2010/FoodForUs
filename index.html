@@ -3,266 +3,371 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#14452f">
+<meta name="theme-color" content="#123a2a">
 <title>Food For Us</title>
-<meta name="description" content="Tell us what is in your kitchen. Get easy Indian dishes, full recipes and simple swaps. Save your own family recipes too.">
+<meta name="description" content="Save your family recipes and cook step by step. Optionally, let an AI suggest dishes from what is in your kitchen.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Mukta:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&family=Mukta:wght@400;600;700&display=swap">
 <style>
-/* Layout: sticky top bar with tabs (bottom tab bar on phones), a deep green hero panel with a turmeric plate, calm white cards, dish cards with a time badge. Two views: Cook (uses Gemini) and My Recipes (typed by hand, saved on this device, no AI). */
+/* Layout: floating glass top bar with a sliding tab pill (floating bottom bar on phones), soft drifting glow behind everything,
+   cream cards, a guided tour that teaches the no-AI part first and the AI part second.
+   AI is optional and provider-agnostic: see PROVIDERS in the script to add another one. */
 :root {
-  --bg: #f1f5ee;
-  --surface: #ffffff;
-  --surface-2: #f6f9f3;
-  --ink: #15241b;
-  --muted: #58695e;
-  --line: #d9e1d4;
-  --brand: #13432e;
-  --accent: #1c7a51;
+  --bg: #f6f3ec;
+  --surface: #fffdf8;
+  --surface-2: #f1ede3;
+  --ink: #17211b;
+  --muted: #667064;
+  --line: #e6e0d2;
+  --brand: #123a2a;
+  --accent: #1b6b4a;
   --accent-ink: #ffffff;
-  --accent-soft: #dff0e5;
-  --sun: #f3b62c;
-  --sun-soft: #fdf1cf;
-  --sun-ink: #6a4900;
-  --chili: #c43d2a;
+  --accent-soft: #e0eee3;
+  --sun: #f0b429;
+  --sun-soft: #fbefcf;
+  --sun-ink: #6b4a00;
+  --chili: #c8452f;
   --veg: #1f9d55;
-  --danger: #a73a1f;
+  --danger: #b03a1e;
   --hero-ink: #f6f3e8;
-  --shadow: 0 1px 2px rgba(19, 67, 46, 0.06), 0 10px 28px rgba(19, 67, 46, 0.08);
-  --font-display: "Baloo 2", "Mukta", system-ui, sans-serif;
-  --font-body: "Mukta", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --fs: 19px;
-  --tabbar: 70px;
+  --glow1: rgba(240, 180, 41, 0.30);
+  --glow2: rgba(27, 107, 74, 0.22);
+  --shadow: 0 1px 2px rgba(18, 58, 42, 0.05), 0 14px 34px -12px rgba(18, 58, 42, 0.16);
+  --shadow-s: 0 1px 2px rgba(18, 58, 42, 0.05), 0 8px 22px -10px rgba(18, 58, 42, 0.18);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --font-display: "Fraunces", "Mukta", Georgia, serif;
+  --font-body: "Figtree", "Mukta", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --fs: 18px;
+  --tabbar: 78px;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0e1712;
-    --surface: #17221b;
-    --surface-2: #1b281f;
-    --ink: #edf3ea;
-    --muted: #a5b5aa;
-    --line: #2b3b31;
-    --brand: #0b2c1e;
+    --bg: #0c120e;
+    --surface: #151d17;
+    --surface-2: #1b261e;
+    --ink: #eef2ea;
+    --muted: #9fb0a4;
+    --line: #26332a;
+    --brand: #0a281c;
     --accent: #5cc28d;
-    --accent-ink: #0b1a11;
-    --accent-soft: #1f3a2b;
+    --accent-ink: #082015;
+    --accent-soft: #1d3a2b;
     --sun: #f2bd45;
-    --sun-soft: #3a2f12;
+    --sun-soft: #372d12;
     --sun-ink: #f5d78a;
     --chili: #ff8a73;
     --veg: #4fd488;
     --danger: #ff9a7a;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 28px rgba(0, 0, 0, 0.3);
+    --glow1: rgba(242, 189, 69, 0.10);
+    --glow2: rgba(92, 194, 141, 0.12);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 14px 34px -12px rgba(0, 0, 0, 0.55);
+    --shadow-s: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 22px -10px rgba(0, 0, 0, 0.5);
     color-scheme: dark;
   }
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--font-body);
-  font-size: var(--fs);
-  line-height: 1.5;
-  -webkit-tap-highlight-color: transparent;
-}
-body.big { --fs: 23px; }
-h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.15; margin: 0; text-wrap: balance; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: var(--fs); line-height: 1.5; -webkit-tap-highlight-color: transparent; transition: background 0.3s; }
+body.big { --fs: 22px; }
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 600; line-height: 1.12; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
 p { margin: 0; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; touch-action: manipulation; }
 a { color: var(--accent); }
 :focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+::selection { background: var(--sun); color: #2a1d00; }
+
+/* ---------- motion ---------- */
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes pop { from { opacity: 0; transform: scale(0.94) translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes sheetUp { from { opacity: 0.4; transform: translateY(60px); } to { opacity: 1; transform: none; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes drift { to { transform: translate3d(7vmax, 5vmax, 0) scale(1.12); } }
+@keyframes shimmer { to { background-position: -200% 0; } }
+@keyframes steam { 0% { opacity: 0; transform: translateY(6px); } 40% { opacity: 1; } 100% { opacity: 0; transform: translateY(-12px); } }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@keyframes slideF { from { opacity: 0; transform: translateX(34px); } to { opacity: 1; transform: none; } }
+@keyframes slideB { from { opacity: 0; transform: translateX(-34px); } to { opacity: 1; transform: none; } }
+@keyframes typing { to { width: 17ch; } }
+@keyframes caret { 50% { border-color: transparent; } }
+@keyframes fill { 0% { width: 12%; } 50% { width: 68%; } 100% { width: 12%; } }
+@keyframes dots { 0%, 80%, 100% { transform: scale(0.5); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
+.rise { animation: rise 0.55s var(--ease) both; animation-delay: calc(var(--i, 0) * 55ms); }
+.view.enter > * { animation: rise 0.6s var(--ease) both; }
+.view.enter > *:nth-child(2) { animation-delay: 0.05s; }
+.view.enter > *:nth-child(3) { animation-delay: 0.1s; }
+.view.enter > *:nth-child(4) { animation-delay: 0.15s; }
+.view.enter > *:nth-child(5) { animation-delay: 0.2s; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition: none !important; } }
+
+/* ---------- ambience ---------- */
+.aura { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.aura i { position: absolute; border-radius: 50%; will-change: transform; }
+.aura i:nth-child(1) { width: 64vmax; height: 64vmax; left: -24vmax; top: -30vmax; background: radial-gradient(closest-side, var(--glow1), transparent); animation: drift 24s ease-in-out infinite alternate; }
+.aura i:nth-child(2) { width: 70vmax; height: 70vmax; right: -30vmax; bottom: -34vmax; background: radial-gradient(closest-side, var(--glow2), transparent); animation: drift 30s ease-in-out infinite alternate-reverse; }
 
 /* ---------- top bar ---------- */
-.topbar { position: sticky; top: 0; z-index: 20; background: var(--bg); background: color-mix(in srgb, var(--bg) 86%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
-.topbar-in { max-width: 1080px; margin: 0 auto; display: flex; align-items: center; gap: 12px; padding-block: 10px; padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px)); }
-.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-family: var(--font-display); font-weight: 800; font-size: 1.45rem; white-space: nowrap; }
-.logo { width: 42px; height: 42px; border-radius: 13px; background: var(--brand); color: var(--sun); display: grid; place-items: center; flex: none; }
-.logo svg { width: 28px; height: 28px; }
-.tabs { display: flex; gap: 6px; margin-left: 14px; }
-.tab { display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; border-radius: 999px; font-weight: 700; color: var(--muted); text-decoration: none; min-height: 46px; }
-.tab:hover { background: var(--accent-soft); }
-.tab[aria-current="page"] { background: var(--accent-soft); color: var(--accent); }
+.topbar { position: sticky; top: 0; z-index: 20; padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 0; }
+.topbar-in { max-width: 1080px; margin: 0 auto; display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; border: 1px solid var(--line); border-radius: 24px; background: color-mix(in srgb, var(--surface) 78%, transparent); -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3); box-shadow: var(--shadow-s); }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; white-space: nowrap; }
+.logo { width: 40px; height: 40px; border-radius: 13px; background: var(--brand); color: var(--sun); display: grid; place-items: center; flex: none; }
+.logo svg { width: 26px; height: 26px; }
+.tabs, .tabbar { position: relative; }
+.tabs { display: flex; gap: 2px; margin-left: 12px; padding: 4px; border-radius: 18px; background: var(--surface-2); }
+.ind { position: absolute; left: 0; top: 4px; bottom: 4px; width: 0; border-radius: 14px; background: var(--surface); box-shadow: var(--shadow-s); transition: transform 0.45s var(--ease), width 0.45s var(--ease), opacity 0.2s; z-index: 0; }
+.tab { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 14px; font-weight: 600; color: var(--muted); text-decoration: none; min-height: 46px; border: 0; background: none; transition: color 0.25s; }
+.tab:hover { color: var(--ink); }
+.tab[aria-current="page"] { color: var(--accent); }
 .tab svg, .tabbar svg { width: 22px; height: 22px; flex: none; }
-.tools { margin-left: auto; display: flex; gap: 8px; }
-.iconbtn { min-height: 46px; min-width: 46px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 12px; font-weight: 700; }
+.tools { margin-left: auto; display: flex; gap: 6px; }
+.iconbtn { min-height: 46px; min-width: 46px; border-radius: 15px; border: 1px solid var(--line); background: var(--surface); display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 12px; font-weight: 600; transition: transform 0.18s var(--ease), border-color 0.2s, background 0.2s; }
 .iconbtn:hover { border-color: var(--accent); }
-.dot { width: 10px; height: 10px; border-radius: 50%; background: #a9b5ad; flex: none; }
-.dot.on { background: #2fbf71; }
+.iconbtn:active { transform: scale(0.95); }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: #a9b5ad; flex: none; transition: background 0.3s, box-shadow 0.3s; }
+.dot.on { background: #2fbf71; box-shadow: 0 0 0 4px rgba(47, 191, 113, 0.2); }
 
-.tabbar { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--surface); border-top: 1px solid var(--line); padding-block: 6px calc(6px + env(safe-area-inset-bottom, 0px)); padding-inline: max(10px, env(safe-area-inset-left, 0px)) max(10px, env(safe-area-inset-right, 0px)); grid-template-columns: repeat(2, 1fr); gap: 8px; }
-.tabbar a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; border-radius: 16px; color: var(--muted); font-weight: 700; font-size: 0.85rem; text-decoration: none; }
-.tabbar a[aria-current="page"] { color: var(--accent); background: var(--accent-soft); }
+.tabbar { display: none; position: fixed; left: 50%; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: calc(100% - 24px); max-width: 440px; z-index: 30; padding: 6px; border: 1px solid var(--line); border-radius: 28px; background: color-mix(in srgb, var(--surface) 82%, transparent); -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3); box-shadow: var(--shadow); grid-template-columns: repeat(3, 1fr); }
+.tabbar .ind { top: 6px; bottom: 6px; background: var(--accent-soft); box-shadow: none; border-radius: 22px; }
+.tabbar > a, .tabbar > button { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-height: 58px; border: 0; background: none; border-radius: 22px; color: var(--muted); font-weight: 600; font-size: 0.78rem; text-decoration: none; transition: color 0.25s, transform 0.18s var(--ease); }
+.tabbar > a:active, .tabbar > button:active { transform: scale(0.94); }
+.tabbar > [aria-current="page"] { color: var(--accent); }
 
 /* ---------- page ---------- */
-.page { max-width: 1080px; margin: 0 auto; padding-block: 22px 56px; padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px)); }
+.page { max-width: 1080px; margin: 0 auto; padding: 22px max(16px, env(safe-area-inset-right, 0px)) 56px max(16px, env(safe-area-inset-left, 0px)); }
 .view { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
 
-.hero { position: relative; overflow: hidden; border-radius: 28px; background-color: var(--brand); background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1.5px, transparent 1.6px); background-size: 22px 22px; color: var(--hero-ink); padding: 36px 32px; display: grid; grid-template-columns: 1.35fr 1fr; gap: 28px; align-items: center; }
-.hero::after { content: ""; position: absolute; right: -90px; bottom: -170px; width: 380px; height: 380px; border-radius: 50%; background: var(--sun); opacity: 0.9; }
-.hero > * { position: relative; z-index: 1; }
+.hero { position: relative; overflow: hidden; border-radius: 32px; background: var(--brand); color: var(--hero-ink); padding: 38px 34px; display: grid; grid-template-columns: 1.3fr 1fr; gap: 24px; align-items: center; isolation: isolate; }
+.hero::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(520px 320px at 85% 110%, rgba(240, 180, 41, 0.55), transparent 70%), radial-gradient(rgba(255, 255, 255, 0.07) 1.4px, transparent 1.5px) 0 0 / 22px 22px; }
 .hero-copy { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
-.eyebrow { font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.8rem; color: var(--sun); }
-.hero h1 { font-size: clamp(2rem, 5.5vw, 3.3rem); font-weight: 800; }
-.hero .lead { font-size: 1.08rem; opacity: 0.92; max-width: 44ch; }
-.flow { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-.flow li { display: flex; gap: 12px; align-items: center; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 16px; padding: 12px 14px; font-weight: 600; }
-.flow b { width: 30px; height: 30px; border-radius: 50%; background: var(--sun); color: #2a1d00; display: grid; place-items: center; font-family: var(--font-display); flex: none; }
+.eyebrow { font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.78rem; color: var(--sun); }
+.hero h1 { font-size: clamp(2rem, 5.2vw, 3.2rem); font-weight: 600; }
+.hero .lead { font-size: 1.05rem; opacity: 0.9; max-width: 44ch; }
+.hero-art { justify-self: center; width: min(260px, 100%); animation: bob 6s ease-in-out infinite; }
+.hero-art svg { width: 100%; height: auto; display: block; overflow: visible; }
+.stm { animation: steam 3s ease-in-out infinite; }
+.stm:nth-child(2) { animation-delay: 0.7s; }
+.stm:nth-child(3) { animation-delay: 1.4s; }
 
 .cols { display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; align-items: start; }
 .col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 22px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px; min-width: 0; scroll-margin-top: 90px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 26px; padding: 22px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px; min-width: 0; scroll-margin-top: 100px; }
 .card-head { display: flex; align-items: center; gap: 12px; }
-.num { flex: none; width: 2.2rem; height: 2.2rem; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-family: var(--font-display); font-weight: 800; }
-.card-head h2 { font-size: 1.4rem; }
+.num { flex: none; width: 2.1rem; height: 2.1rem; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; }
+.card-head h2 { font-size: 1.35rem; }
 .hint { color: var(--muted); font-size: 0.9em; }
 .label { font-weight: 700; }
 .row { display: flex; gap: 10px; flex-wrap: wrap; }
 .row input { flex: 1 1 220px; }
 
 /* ---------- buttons and fields ---------- */
-.btn { min-height: 54px; padding: 10px 22px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent); color: var(--accent-ink); font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; transition: transform 0.08s; }
-.btn:active:not(:disabled) { transform: translateY(1px); }
-.btn.ghost { background: var(--surface); color: var(--accent); }
-.btn.sun { background: var(--sun); border-color: var(--sun); color: #2a1d00; font-family: var(--font-display); font-size: 1.15rem; }
+.btn { min-height: 54px; padding: 10px 22px; border-radius: 16px; border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; box-shadow: 0 1px 0 rgba(255, 255, 255, 0.22) inset, 0 10px 20px -10px color-mix(in srgb, var(--accent) 80%, transparent); transition: transform 0.2s var(--ease), box-shadow 0.25s, background 0.2s, opacity 0.2s; }
+.btn:hover { transform: translateY(-2px); }
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn.ghost { background: var(--surface-2); color: var(--ink); box-shadow: none; border: 1px solid var(--line); }
+.btn.ghost:hover { border-color: var(--accent); }
+.btn.sun { background: var(--sun); color: #2a1d00; box-shadow: 0 10px 22px -10px rgba(240, 180, 41, 0.9); }
 .btn.small { min-height: 46px; padding: 6px 16px; }
-.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
 .btn svg { width: 20px; height: 20px; flex: none; }
-input[type="text"], input[type="password"], input[type="number"], input[type="search"], select, textarea { width: 100%; min-width: 0; min-height: 54px; padding: 10px 14px; border: 2px solid var(--line); border-radius: 12px; background: var(--surface-2); }
+input[type="text"], input[type="password"], input[type="number"], input[type="search"], select, textarea { width: 100%; min-width: 0; min-height: 54px; padding: 10px 16px; border: 1.5px solid var(--line); border-radius: 15px; background: var(--surface-2); transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 4px var(--accent-soft); }
 textarea { min-height: 0; line-height: 1.45; resize: vertical; }
-input::placeholder, textarea::placeholder { color: var(--muted); opacity: 0.8; }
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: 0.75; }
 .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .field > label, .field > .label { font-weight: 700; }
 .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-
 .photo-label { position: relative; }
 .photo-label input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .photo-label:focus-within { outline: 3px solid var(--sun); outline-offset: 2px; }
 
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { border: 2px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 6px 14px; min-height: 46px; }
+.chip { border: 1.5px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 6px 15px; min-height: 46px; transition: transform 0.2s var(--ease), background 0.2s, border-color 0.2s; }
+.chip:hover { border-color: var(--accent); }
+.chip:active { transform: scale(0.94); }
 .chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); font-weight: 600; }
 .chip[aria-pressed="true"]::before { content: "\2713\00a0"; color: var(--accent); }
-.mine { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; border-radius: 16px; background: var(--sun-soft); color: var(--sun-ink); min-height: 3.4rem; align-items: center; }
-.mine .item { display: inline-flex; align-items: center; gap: 6px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 4px 6px 4px 14px; font-weight: 600; }
-.mine .item button { border: 0; background: var(--surface-2); width: 38px; height: 38px; border-radius: 50%; font-size: 1.1em; line-height: 1; }
+.mine { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; border-radius: 18px; background: var(--sun-soft); color: var(--sun-ink); min-height: 3.4rem; align-items: center; }
+.mine .item { display: inline-flex; align-items: center; gap: 6px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 4px 6px 4px 14px; font-weight: 600; animation: pop 0.3s var(--ease) both; }
+.mine .item button { border: 0; background: var(--surface-2); width: 36px; height: 36px; border-radius: 50%; font-size: 1.1em; line-height: 1; transition: background 0.2s, transform 0.18s; }
+.mine .item button:hover { background: var(--accent-soft); }
+.mine .item button:active { transform: scale(0.88); }
 
 .seg { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
-.seg button { min-height: 66px; border: 2px solid var(--line); background: var(--surface-2); border-radius: 16px; font-weight: 700; font-size: 1.15em; }
-.seg button small { display: block; font-weight: 400; color: var(--muted); font-size: 0.7em; }
-.seg button[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.seg button { min-height: 66px; border: 1.5px solid var(--line); background: var(--surface-2); border-radius: 18px; font-weight: 700; font-size: 1.12em; transition: transform 0.2s var(--ease), background 0.2s, border-color 0.2s; }
+.seg button:hover { border-color: var(--accent); }
+.seg button:active { transform: scale(0.96); }
+.seg button small { display: block; font-weight: 500; color: var(--muted); font-size: 0.7em; }
+.seg button[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .seg.two-up { grid-template-columns: 1fr 1fr; }
 .seg.two-up button { min-height: 54px; font-size: 1em; }
-
 .opt { display: flex; align-items: center; gap: 12px; min-height: 52px; }
 .opt input[type="checkbox"] { width: 28px; height: 28px; accent-color: var(--accent); flex: none; }
 .opt label { flex: 1; min-width: 0; }
 .opt select { width: auto; min-height: 48px; }
 .langs { display: flex; gap: 10px; flex-wrap: wrap; }
-.langs button { min-height: 50px; border: 2px solid var(--line); background: var(--surface-2); border-radius: 12px; padding: 6px 20px; font-weight: 700; }
-.langs button[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.langs button { min-height: 50px; border: 1.5px solid var(--line); background: var(--surface-2); border-radius: 14px; padding: 6px 20px; font-weight: 700; transition: background 0.2s, border-color 0.2s, transform 0.18s; }
+.langs button:active { transform: scale(0.95); }
+.langs button[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 
 .go-row { display: flex; gap: 10px; flex-wrap: wrap; }
-.go-row .btn { flex: 0 1 400px; min-height: 66px; font-size: 1.25rem; font-family: var(--font-display); }
+.go-row .btn { flex: 0 1 400px; min-height: 66px; font-size: 1.2rem; font-family: var(--font-display); font-weight: 600; }
 
 /* ---------- results and dish cards ---------- */
-#results { display: flex; flex-direction: column; gap: 16px; min-width: 0; scroll-margin-top: 90px; }
-#results h2, .page-head h1 { font-size: 1.8rem; }
+#results { display: flex; flex-direction: column; gap: 16px; min-width: 0; scroll-margin-top: 100px; }
+#results h2, .page-head h1 { font-size: clamp(1.7rem, 4vw, 2.2rem); }
 .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
-.note { padding: 14px 16px; border-radius: 14px; background: var(--sun-soft); color: var(--sun-ink); }
-.note.bad { background: var(--surface); border: 2px solid var(--danger); color: var(--danger); }
-.thinking { display: flex; align-items: center; gap: 14px; padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); }
-.spin { width: 28px; height: 28px; border: 4px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.9s linear infinite; flex: none; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.note { padding: 14px 16px; border-radius: 16px; background: var(--sun-soft); color: var(--sun-ink); animation: pop 0.35s var(--ease) both; }
+.note.bad { background: var(--surface); border: 1.5px solid var(--danger); color: var(--danger); }
+.thinking { display: flex; align-items: center; gap: 12px; color: var(--muted); font-weight: 600; }
+.dotsx { display: inline-flex; gap: 5px; }
+.dotsx i { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); animation: dots 1.1s ease-in-out infinite; }
+.dotsx i:nth-child(2) { animation-delay: 0.15s; }
+.dotsx i:nth-child(3) { animation-delay: 0.3s; }
+.skel { padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.sk { height: 14px; border-radius: 8px; background: linear-gradient(90deg, var(--surface-2) 30%, var(--line) 50%, var(--surface-2) 70%) 0 0 / 200% 100%; animation: shimmer 1.4s linear infinite; }
+.sk.t { height: 24px; width: 70%; }
+.sk.s { width: 40%; }
 
-.dish { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow); overflow: hidden; min-width: 0; }
+.dish { background: var(--surface); border: 1px solid var(--line); border-radius: 26px; box-shadow: var(--shadow); overflow: hidden; min-width: 0; transition: transform 0.3s var(--ease), box-shadow 0.3s; }
+.dish:hover { transform: translateY(-3px); }
 .dish-top { padding: 18px; display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; }
-.mins { width: 4.6rem; padding: 8px 4px; border-radius: 16px; background: var(--sun-soft); color: var(--sun-ink); text-align: center; font-family: var(--font-display); font-weight: 800; line-height: 1; }
-.mins b { display: block; font-size: 1.9rem; font-variant-numeric: tabular-nums; }
-.mins span { font-size: 0.8rem; font-weight: 600; }
+.mins { width: 4.4rem; padding: 10px 4px; border-radius: 18px; background: var(--sun-soft); color: var(--sun-ink); text-align: center; font-family: var(--font-display); font-weight: 700; line-height: 1; }
+.mins b { display: block; font-size: 1.8rem; font-variant-numeric: tabular-nums; }
+.mins span { font-size: 0.78rem; font-weight: 600; font-family: var(--font-body); }
 .dish-main { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-.dish-main h3 { font-size: 1.35rem; display: flex; gap: 10px; align-items: flex-start; overflow-wrap: anywhere; }
+.dish-main h3 { font-size: 1.3rem; display: flex; gap: 10px; align-items: flex-start; overflow-wrap: anywhere; }
 .dish-main h3 .vm { margin-top: 5px; }
-.dish-main p { overflow-wrap: anywhere; }
-.vm { display: inline-grid; place-items: center; width: 20px; height: 20px; border: 2px solid var(--vm); border-radius: 4px; flex: none; }
+.dish-main p { overflow-wrap: anywhere; color: var(--muted); }
+.vm { display: inline-grid; place-items: center; width: 20px; height: 20px; border: 2px solid var(--vm); border-radius: 5px; flex: none; }
 .vm::after { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--vm); }
 .vm.veg { --vm: var(--veg); }
 .vm.nonveg { --vm: var(--chili); }
 .pills { display: flex; flex-wrap: wrap; gap: 8px; }
-.pill { padding: 2px 12px; border-radius: 999px; font-size: 0.85em; font-weight: 700; border: 1px solid var(--line); background: var(--surface-2); }
-.pill.ok { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
-.pill.miss { background: var(--sun-soft); border-color: var(--sun); color: var(--sun-ink); }
+.pill { padding: 2px 12px; border-radius: 999px; font-size: 0.82em; font-weight: 700; border: 1px solid var(--line); background: var(--surface-2); }
+.pill.ok { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+.pill.miss { background: var(--sun-soft); border-color: transparent; color: var(--sun-ink); }
 .dish-actions { padding: 0 18px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .dish-actions .wide { grid-column: 1 / -1; }
-.recipe { border-top: 1px dashed var(--line); padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+.recipe { border-top: 1px dashed var(--line); padding: 18px; display: flex; flex-direction: column; gap: 16px; animation: rise 0.4s var(--ease) both; }
 .recipe h4 { font-size: 1.1rem; margin-bottom: 6px; }
 .recipe ul, .recipe ol { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 6px; }
 .recipe li { overflow-wrap: anywhere; }
 .recipe ol li { padding-left: 4px; }
-.swap { background: var(--sun-soft); color: var(--sun-ink); border-radius: 14px; padding: 12px 14px; }
+.recipe li::marker { color: var(--accent); font-weight: 700; }
+.swap { background: var(--sun-soft); color: var(--sun-ink); border-radius: 16px; padding: 12px 14px; }
 .nutri { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.nutri div { background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 10px 6px; text-align: center; }
-.nutri b { display: block; font-family: var(--font-display); font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+.nutri div { background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px; padding: 10px 6px; text-align: center; }
+.nutri b { display: block; font-family: var(--font-display); font-size: 1.25rem; font-variant-numeric: tabular-nums; }
 .nutri span { font-size: 0.8em; color: var(--muted); }
 .notes { white-space: pre-wrap; overflow-wrap: anywhere; }
 
 /* ---------- my recipes ---------- */
 .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
-.page-head p { color: var(--muted); margin-top: 4px; }
+.page-head p { color: var(--muted); margin-top: 6px; }
 .toolbar { display: flex; flex-direction: column; gap: 12px; }
-.empty { background: var(--surface); border: 2px dashed var(--line); border-radius: 24px; padding: 40px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; }
-.empty svg { width: 84px; height: 84px; color: var(--accent); }
-.empty h2 { font-size: 1.5rem; }
+.empty { background: var(--surface); border: 1.5px dashed var(--line); border-radius: 30px; padding: 44px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; }
+.empty svg { width: 90px; height: 90px; color: var(--accent); animation: bob 5s ease-in-out infinite; }
+.empty h2 { font-size: 1.6rem; }
 .empty p { color: var(--muted); max-width: 44ch; }
 .backup { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; }
 .backup > div { min-width: 0; flex: 1 1 260px; }
 .backup h3 { font-size: 1.2rem; }
-
-footer { max-width: 1080px; margin: 0 auto; padding: 0 16px 40px; color: var(--muted); font-size: 0.85em; text-align: center; }
+footer { max-width: 1080px; margin: 0 auto; padding: 0 16px 40px; color: var(--muted); font-size: 0.82em; text-align: center; }
 
 /* ---------- dialogs ---------- */
-dialog { border: 0; border-radius: 26px; padding: 0; background: var(--surface); color: var(--ink); width: min(560px, calc(100vw - 24px)); max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); overflow-y: auto; overscroll-behavior: contain; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.4); }
-dialog::backdrop { background: rgba(8, 24, 16, 0.65); }
+dialog { border: 0; border-radius: 30px; padding: 0; background: var(--surface); color: var(--ink); width: min(560px, calc(100vw - 24px)); max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); overflow-y: auto; overscroll-behavior: contain; box-shadow: 0 30px 80px -10px rgba(0, 0, 0, 0.45); }
+dialog[open] { animation: pop 0.4s var(--ease) both; }
+dialog::backdrop { background: rgba(8, 24, 16, 0.55); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); animation: fade 0.3s both; }
 #editor { width: min(660px, calc(100vw - 24px)); }
-.sheet { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.sheet { padding: 26px; display: flex; flex-direction: column; gap: 16px; }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.sheet-head h2 { font-size: 1.7rem; }
-.sheet ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 4px; }
-.sheet summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
-.sheet details { background: var(--surface-2); border-radius: 14px; padding: 0 14px 14px; }
+.sheet-head h2 { font-size: 1.6rem; }
+.sheet details { background: var(--surface-2); border-radius: 16px; padding: 0 14px 14px; }
 .sheet details .three { margin-top: 4px; }
-.kd-msg { min-height: 1.4em; color: var(--danger); font-weight: 600; }
+.sheet summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
+.kd-msg { min-height: 1.4em; color: var(--danger); font-weight: 600; overflow-wrap: anywhere; }
+.kd-msg.ok { color: var(--accent); }
 .sheet-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .sheet-actions .btn { flex: 1 1 160px; }
 .link-btn { background: none; border: 0; padding: 6px 0; color: var(--danger); text-decoration: underline; align-self: flex-start; min-height: 44px; }
+.provs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.provs button { text-align: left; border: 1.5px solid var(--line); background: var(--surface-2); border-radius: 16px; padding: 10px 14px; display: flex; flex-direction: column; min-height: 64px; justify-content: center; transition: transform 0.2s var(--ease), border-color 0.2s, background 0.2s; }
+.provs button:hover { border-color: var(--accent); }
+.provs button:active { transform: scale(0.96); }
+.provs button b { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; }
+.provs button small { color: var(--muted); }
+.provs button[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.aiform { display: flex; flex-direction: column; gap: 12px; }
 
+/* tour */
+dialog#tour { width: min(940px, calc(100vw - 24px)); height: min(620px, calc(100dvh - 24px)); overflow: hidden; }
+.tour { display: grid; grid-template-columns: 1fr 1.05fr; height: 100%; }
+.tour-art { position: relative; background: var(--brand); overflow: hidden; display: grid; place-items: center; isolation: isolate; }
+.tour-art::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(360px 260px at 80% 100%, rgba(240, 180, 41, 0.5), transparent 70%), radial-gradient(rgba(255, 255, 255, 0.07) 1.4px, transparent 1.5px) 0 0 / 22px 22px; }
+.tour-art > div { animation: pop 0.55s var(--ease) both; width: min(300px, 82%); color: var(--hero-ink); }
+.tour-body { display: flex; flex-direction: column; min-height: 0; padding: 22px 26px; gap: 14px; }
+.tour-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.tdots { display: flex; gap: 6px; }
+.tdots i { height: 6px; width: 18px; border-radius: 99px; background: var(--line); transition: background 0.3s, width 0.4s var(--ease); }
+.tdots i.on { background: var(--accent); width: 28px; }
+.tdots i.ai.on { background: var(--sun); }
+.tour-slide { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; justify-content: center; }
+.tour-slide.fwd { animation: slideF 0.5s var(--ease) both; }
+.tour-slide.back { animation: slideB 0.5s var(--ease) both; }
+.tour-slide h2 { font-size: clamp(1.7rem, 3.6vw, 2.2rem); }
+.tour-slide p { color: var(--muted); }
+.badge { align-self: flex-start; font-weight: 700; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 12px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
+.badge.ai { background: var(--sun-soft); color: var(--sun-ink); }
+.tour-nav { display: flex; gap: 10px; }
+.tour-nav .btn { flex: 1; }
+.tour-nav #t-next { flex: 2; }
+.skip { background: none; border: 0; color: var(--muted); font-weight: 600; min-height: 40px; padding: 0 8px; border-radius: 10px; }
+.skip:hover { color: var(--ink); }
+
+/* tour art pieces */
+.mock { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.mock .ln { height: 11px; border-radius: 8px; background: rgba(255, 255, 255, 0.28); }
+.mock .typed { display: inline-block; overflow: hidden; white-space: nowrap; width: 0; border-right: 2px solid var(--sun); animation: typing 2.2s steps(17) 0.4s forwards, caret 0.8s step-end infinite; font-family: var(--font-display); font-size: 1.2rem; vertical-align: bottom; }
+.mock .tag { align-self: flex-start; font-size: 0.78rem; font-weight: 700; padding: 2px 10px; border-radius: 99px; background: var(--sun); color: #2a1d00; }
+.mock .row2 { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.1); animation: rise 0.5s var(--ease) both; }
+.mock .row2:nth-of-type(2) { animation-delay: 0.15s; }
+.mock .row2:nth-of-type(3) { animation-delay: 0.3s; }
+.mock .row2.hi { background: var(--sun); color: #2a1d00; font-weight: 700; }
+.mock .pbar { height: 8px; border-radius: 99px; background: rgba(255, 255, 255, 0.2); overflow: hidden; }
+.mock .pbar span { display: block; height: 100%; background: var(--sun); border-radius: 99px; animation: fill 4s ease-in-out infinite; }
+.mock .bigstep { font-family: var(--font-display); font-size: 1.35rem; line-height: 1.3; }
+.floaty { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.floaty span { padding: 8px 16px; border-radius: 99px; background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.25); font-weight: 600; animation: bob 4s ease-in-out infinite; }
+.floaty span:nth-child(2n) { animation-delay: 0.6s; background: var(--sun); color: #2a1d00; border-color: transparent; }
+.floaty span:nth-child(3n) { animation-delay: 1.2s; }
+
+/* cooking mode */
 dialog#cook { width: 100%; height: 100%; max-width: 100%; max-height: 100%; margin: 0; border-radius: 0; background: var(--brand); color: var(--hero-ink); overflow: hidden; }
-dialog#cook[open] { display: flex; flex-direction: column; }
+dialog#cook[open] { display: flex; flex-direction: column; animation: fade 0.35s both; }
 .ck { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; padding-block: calc(18px + env(safe-area-inset-top, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)); padding-inline: max(20px, env(safe-area-inset-left, 0px)) max(20px, env(safe-area-inset-right, 0px)); max-width: 860px; width: 100%; margin: 0 auto; }
 .ck-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
 .ck-top h2 { font-size: 1.5rem; overflow-wrap: anywhere; }
 .ck .iconbtn { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.3); color: var(--hero-ink); }
-.ck-bar { height: 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.18); flex: none; }
-.ck-bar span { display: block; height: 100%; width: 0; border-radius: 999px; background: var(--sun); transition: width 0.25s; }
-.ck-ing { background: rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 0 14px; flex: none; max-height: 40%; overflow-y: auto; }
+.ck-bar { height: 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.18); flex: none; overflow: hidden; }
+.ck-bar span { display: block; height: 100%; width: 0; border-radius: 999px; background: var(--sun); transition: width 0.5s var(--ease); }
+.ck-ing { background: rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 0 14px; flex: none; max-height: 40%; overflow-y: auto; }
 .ck-ing summary { cursor: pointer; font-weight: 700; min-height: 46px; display: flex; align-items: center; }
 .ck-ing ul { margin: 0 0 12px; padding-left: 1.3em; display: flex; flex-direction: column; gap: 4px; }
 .ck-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; align-items: center; }
-.ck-step { font-family: var(--font-display); font-weight: 600; font-size: clamp(1.6rem, 5.5vw, 2.6rem); line-height: 1.3; overflow-wrap: anywhere; }
+.ck-step { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.6rem, 5.5vw, 2.7rem); line-height: 1.28; overflow-wrap: anywhere; }
+.ck-step.swap-in { animation: slideF 0.45s var(--ease) both; }
+.ck-step.swap-back { animation: slideB 0.45s var(--ease) both; }
 .ck-nav { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; flex: none; }
-.ck-nav .btn { min-height: 72px; font-size: 1.25rem; font-family: var(--font-display); }
-.ck-nav .btn.ghost { background: transparent; color: var(--hero-ink); border-color: rgba(255, 255, 255, 0.4); }
-.ck-nav .btn.sun { background: var(--sun); color: #2a1d00; border-color: var(--sun); }
+.ck-nav .btn { min-height: 72px; font-size: 1.2rem; font-family: var(--font-display); font-weight: 600; }
+.ck-nav .btn.ghost { background: transparent; color: var(--hero-ink); border: 1px solid rgba(255, 255, 255, 0.4); }
+.ck-nav .btn.sun { background: var(--sun); color: #2a1d00; }
 
-#toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); background: var(--ink); color: var(--bg); padding: 12px 22px; border-radius: 999px; font-weight: 700; opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s; z-index: 100; max-width: calc(100vw - 32px); text-align: center; }
-#toast.show { opacity: 1; transform: translate(-50%, 0); }
+#toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px) scale(0.96); background: var(--ink); color: var(--bg); padding: 12px 22px; border-radius: 999px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.4s var(--ease); z-index: 100; max-width: calc(100vw - 32px); text-align: center; }
+#toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
 
 /* ---------- phones ---------- */
 @media (max-width: 800px) {
@@ -270,36 +375,41 @@ dialog#cook[open] { display: flex; flex-direction: column; }
   .tabs { display: none; }
   .tabbar { display: grid; }
   .iconbtn .lbl { display: none; }
+  .topbar-in { padding-left: 12px; }
   .page { padding-top: 16px; }
   .view { gap: 16px; }
-  .hero { grid-template-columns: 1fr; padding: 26px 20px 30px; border-radius: 24px; }
-  .hero::after { width: 240px; height: 240px; right: -90px; bottom: -110px; opacity: 0.5; }
-  .flow { display: none; }
+  .hero { grid-template-columns: 1fr; padding: 28px 22px 30px; border-radius: 28px; }
+  .hero-art { display: none; }
   .cols { grid-template-columns: 1fr; gap: 16px; }
   .col { gap: 16px; }
   .grid { grid-template-columns: 1fr; }
-  .card { padding: 18px 16px; border-radius: 20px; }
+  .card { padding: 18px 16px; border-radius: 24px; }
   .row .btn { flex: 1 1 100%; }
   .seg { grid-template-columns: repeat(2, 1fr); }
-  .seg.two-up { grid-template-columns: 1fr 1fr; }
   .dish-top { padding: 16px; gap: 12px; }
   .dish-actions { padding: 0 16px 16px; }
   .recipe { padding: 16px; }
-  .go-row { position: sticky; bottom: calc(var(--tabbar) + env(safe-area-inset-bottom, 0px)); z-index: 5; padding-block: 10px; background: linear-gradient(to top, var(--bg) 75%, transparent); }
+  .go-row { position: sticky; bottom: calc(var(--tabbar) + 6px + env(safe-area-inset-bottom, 0px)); z-index: 5; padding-block: 10px; background: linear-gradient(to top, var(--bg) 70%, transparent); }
   .go-row .btn { flex: 1 1 auto; }
   .go-row.done { position: static; background: none; padding-block: 0; }
-  dialog.sheetd { margin: auto auto 0; width: 100%; max-width: 100%; border-radius: 26px 26px 0 0; max-height: calc(100vh - 12px); max-height: calc(100dvh - 12px); }
+  dialog.sheetd { margin: auto auto 0; width: 100%; max-width: 100%; border-radius: 30px 30px 0 0; max-height: calc(100vh - 12px); max-height: calc(100dvh - 12px); }
+  dialog.sheetd[open] { animation: sheetUp 0.45s var(--ease) both; }
   .sheet { padding: 22px 18px calc(22px + env(safe-area-inset-bottom, 0px)); }
+  dialog#tour { height: calc(100dvh - 12px); }
+  .tour { grid-template-columns: 1fr; grid-template-rows: 190px 1fr; }
+  .tour-art > div { width: min(250px, 70%); transform: scale(0.82); transform-origin: center; }
+  .tour-body { padding: 16px 18px calc(16px + env(safe-area-inset-bottom, 0px)); }
+  .tour-slide { justify-content: flex-start; }
   footer { padding-bottom: 24px; }
-  #toast { bottom: calc(var(--tabbar) + 16px + env(safe-area-inset-bottom, 0px)); }
+  #toast { bottom: calc(var(--tabbar) + 18px + env(safe-area-inset-bottom, 0px)); }
 }
 @media (max-width: 420px) {
-  :root { --fs: 18px; }
+  :root { --fs: 17.5px; }
   body.big { --fs: 21px; }
-  .brand { font-size: 1.25rem; }
-  .logo { width: 38px; height: 38px; }
-  .mins { width: 3.8rem; }
-  .mins b { font-size: 1.6rem; }
+  .brand { font-size: 1.2rem; }
+  .logo { width: 36px; height: 36px; }
+  .mins { width: 3.7rem; }
+  .mins b { font-size: 1.55rem; }
   .three { gap: 8px; }
   .dish-actions { grid-template-columns: 1fr; }
 }
@@ -307,47 +417,96 @@ dialog#cook[open] { display: flex; flex-direction: column; }
 </head>
 <body>
 
+<div class="aura" aria-hidden="true"><i></i><i></i></div>
+
 <header class="topbar">
   <div class="topbar-in">
-    <a class="brand" href="#cook" aria-label="Food For Us, home">
+    <a class="brand" href="#recipes" aria-label="Food For Us, home">
       <span class="logo" aria-hidden="true">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 24h36c0 10-8 17-18 17S6 34 6 24z" fill="currentColor" stroke="none"/><path d="M17 17c-3-3 3-5 0-9M24 17c-3-3 3-5 0-9M31 17c-3-3 3-5 0-9"/></svg>
       </span>
       <span>Food For Us</span>
     </a>
-    <nav class="tabs" aria-label="Main">
-      <a class="tab" href="#cook" data-view="cook">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11h18v2a7 7 0 0 1-7 7h-4a7 7 0 0 1-7-7z"/><path d="M8 7c-1.5-1.5 1.5-2.5 0-4M12 7c-1.5-1.5 1.5-2.5 0-4M16 7c-1.5-1.5 1.5-2.5 0-4"/></svg>
-        Cook
-      </a>
+    <nav class="tabs" id="tabs" aria-label="Main">
+      <i class="ind"></i>
       <a class="tab" href="#recipes" data-view="recipes">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M9 8h6M9 12h6"/></svg>
         My Recipes
       </a>
+      <a class="tab" href="#cook" data-view="cook">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
+        Cook with AI
+      </a>
     </nav>
     <div class="tools">
       <button type="button" class="iconbtn" id="size-btn" aria-pressed="false" aria-label="Bigger text"><span aria-hidden="true">Aa</span><span class="lbl">Bigger text</span></button>
-      <button type="button" class="iconbtn" id="key-open"><span class="dot" id="key-dot"></span><span id="key-open-text">Add key</span></button>
+      <button type="button" class="iconbtn" id="guide-btn" aria-label="Open the guide"><span aria-hidden="true">?</span><span class="lbl">Guide</span></button>
+      <button type="button" class="iconbtn" id="ai-open"><span class="dot" id="ai-dot"></span><span id="ai-open-text">Connect AI</span></button>
     </div>
   </div>
 </header>
 
 <div class="page">
 
-  <!-- ============ COOK (uses Gemini) ============ -->
-  <div class="view" id="view-cook">
+  <!-- ============ MY RECIPES (no AI) ============ -->
+  <div class="view" id="view-recipes">
+    <div class="page-head">
+      <div>
+        <h1>My Recipes</h1>
+        <p id="rcount">Your own family recipes, saved on this device. No AI is used here.</p>
+      </div>
+      <button type="button" class="btn" id="add-recipe">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Add a recipe
+      </button>
+    </div>
+
+    <div class="toolbar" id="rtools" hidden>
+      <input type="search" id="r-search" placeholder="Search by name or ingredient" aria-label="Search your recipes" autocomplete="off">
+      <div class="chips" id="r-filters" role="group" aria-label="Filter recipes"></div>
+    </div>
+
+    <div class="grid" id="rlist"></div>
+    <p class="note" id="rnone" hidden></p>
+
+    <div class="empty" id="rempty" hidden>
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 24h36c0 10-8 17-18 17S6 34 6 24z" fill="currentColor" fill-opacity="0.15"/><path d="M17 17c-3-3 3-5 0-9M24 17c-3-3 3-5 0-9M31 17c-3-3 3-5 0-9"/></svg>
+      <h2>No recipes yet</h2>
+      <p>Add the dishes your family loves. Type them in once and find them here any time, even without internet.</p>
+      <button type="button" class="btn" id="add-recipe-2">Add your first recipe</button>
+    </div>
+
+    <section class="card backup" aria-labelledby="h-backup">
+      <div>
+        <h3 id="h-backup">Keep your recipes safe</h3>
+        <p class="hint">Recipes live in this browser only. Download a backup file to move them to another phone or computer.</p>
+      </div>
+      <div class="row" style="flex:0 0 auto">
+        <button type="button" class="btn ghost small" id="backup-dl">Download backup</button>
+        <label class="btn ghost small photo-label" for="backup-up">Restore backup
+          <input type="file" id="backup-up" accept=".json,application/json">
+        </label>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ COOK WITH AI ============ -->
+  <div class="view" id="view-cook" hidden>
     <section class="hero">
       <div class="hero-copy">
         <p class="eyebrow" id="greet">Hello</p>
         <h1 id="hero-title">What shall we cook today?</h1>
-        <p class="lead">Tell us what you have at home. Get easy Indian dishes, full recipes and simple swaps for anything that is missing.</p>
+        <p class="lead">Tell us what you have at home. An AI suggests easy Indian dishes, full recipes and simple swaps for anything that is missing.</p>
         <a class="btn sun" href="#start">Let us begin</a>
       </div>
-      <ol class="flow" aria-label="How it works">
-        <li><b>1</b>Add what is in your kitchen</li>
-        <li><b>2</b>Pick how much time you have</li>
-        <li><b>3</b>Get dishes and step by step recipes</li>
-      </ol>
+      <div class="hero-art" aria-hidden="true">
+        <svg viewBox="0 0 200 170" fill="none">
+          <g stroke="#f6f3e8" stroke-width="5" stroke-linecap="round" opacity="0.9"><path class="stm" d="M70 48c-9-9 9-15 0-27"/><path class="stm" d="M100 48c-9-9 9-15 0-27"/><path class="stm" d="M130 48c-9-9 9-15 0-27"/></g>
+          <path d="M22 78h156c0 40-34 70-78 70S22 118 22 78z" fill="#f0b429"/>
+          <path d="M22 78h156" stroke="#f6f3e8" stroke-width="6" stroke-linecap="round"/>
+          <ellipse cx="100" cy="158" rx="52" ry="6" fill="#000" opacity="0.18"/>
+        </svg>
+      </div>
     </section>
 
     <div class="cols">
@@ -355,7 +514,7 @@ dialog#cook[open] { display: flex; flex-direction: column; }
         <section class="card" id="start" aria-labelledby="h-items">
           <div class="card-head"><span class="num">1</span><h2 id="h-items">What do you have at home?</h2></div>
           <div class="row">
-            <input type="text" id="item-input" placeholder="Type here, for example: 2 potato, 1 cup rice" autocomplete="off" enterkeyhint="done" aria-label="Type ingredients, separated by commas">
+            <input type="text" id="item-input" placeholder="For example: 2 potato, 1 cup rice" autocomplete="off" enterkeyhint="done" aria-label="Type ingredients, separated by commas">
             <button type="button" class="btn" id="add-btn">Add</button>
           </div>
           <div>
@@ -404,92 +563,36 @@ dialog#cook[open] { display: flex; flex-direction: column; }
 
     <div id="results" aria-live="polite"></div>
   </div>
-
-  <!-- ============ MY RECIPES (no AI, saved on this device) ============ -->
-  <div class="view" id="view-recipes" hidden>
-    <div class="page-head">
-      <div>
-        <h1>My Recipes</h1>
-        <p id="rcount">Your own family recipes, saved on this device. No AI is used here.</p>
-      </div>
-      <button type="button" class="btn" id="add-recipe">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-        Add a recipe
-      </button>
-    </div>
-
-    <div class="toolbar" id="rtools" hidden>
-      <input type="search" id="r-search" placeholder="Search by name or ingredient" aria-label="Search your recipes" autocomplete="off">
-      <div class="chips" id="r-filters" role="group" aria-label="Filter recipes"></div>
-    </div>
-
-    <div class="grid" id="rlist"></div>
-    <p class="note" id="rnone" hidden></p>
-
-    <div class="empty" id="rempty" hidden>
-      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 24h36c0 10-8 17-18 17S6 34 6 24z" fill="currentColor" fill-opacity="0.15"/><path d="M17 17c-3-3 3-5 0-9M24 17c-3-3 3-5 0-9M31 17c-3-3 3-5 0-9"/></svg>
-      <h2>No recipes yet</h2>
-      <p>Add the dishes your family loves. Type them in once and find them here any time, even without internet.</p>
-      <button type="button" class="btn" id="add-recipe-2">Add your first recipe</button>
-    </div>
-
-    <section class="card backup" aria-labelledby="h-backup">
-      <div>
-        <h3 id="h-backup">Keep your recipes safe</h3>
-        <p class="hint">Recipes live in this browser only. Download a backup file to move them to another phone or computer.</p>
-      </div>
-      <div class="row" style="flex:0 0 auto">
-        <button type="button" class="btn ghost small" id="backup-dl">Download backup</button>
-        <label class="btn ghost small photo-label" for="backup-up">Restore backup
-          <input type="file" id="backup-up" accept=".json,application/json">
-        </label>
-      </div>
-    </section>
-  </div>
 </div>
 
-<footer>Food For Us uses Google Gemini for dish ideas. Dish ideas and nutrition numbers are only a guide. Please check that ingredients are fresh and safe, and check for allergies. Recipes you type in My Recipes never leave this device.</footer>
+<footer>Dish ideas come from the AI you connect (your list is sent to it). Ideas and nutrition numbers are only a guide. Please check that ingredients are fresh and safe, and check for allergies. Recipes you type in My Recipes never leave this device.</footer>
 
-<nav class="tabbar" aria-label="Main">
-  <a href="#cook" data-view="cook">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11h18v2a7 7 0 0 1-7 7h-4a7 7 0 0 1-7-7z"/><path d="M8 7c-1.5-1.5 1.5-2.5 0-4M12 7c-1.5-1.5 1.5-2.5 0-4M16 7c-1.5-1.5 1.5-2.5 0-4"/></svg>
-    Cook
-  </a>
+<nav class="tabbar" id="tabbar" aria-label="Main">
+  <i class="ind"></i>
   <a href="#recipes" data-view="recipes">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M9 8h6M9 12h6"/></svg>
-    My Recipes
+    Recipes
   </a>
+  <a href="#cook" data-view="cook">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
+    Cook with AI
+  </a>
+  <button type="button" id="guide-btn-2">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.3c-.7.4-1.1.9-1.1 1.7M12 17h.01"/></svg>
+    Guide
+  </button>
 </nav>
 
 <div id="toast" role="status" aria-live="polite"></div>
 
-<!-- Gemini key -->
-<dialog id="key-dialog" class="sheetd" aria-labelledby="kd-title">
+<!-- Connect an AI -->
+<dialog id="ai-dialog" class="sheetd" aria-labelledby="ai-title">
   <div class="sheet">
-    <h2 id="kd-title">Welcome to Food For Us</h2>
-    <p>To suggest dishes, this website uses Google Gemini. Please add your free Gemini key to begin. You can still use My Recipes without it.</p>
-    <ol>
-      <li><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Open Google AI Studio</a> and create a free key.</li>
-      <li>Copy the key and paste it below.</li>
-    </ol>
-    <div class="field">
-      <label for="key-input">Your Gemini key</label>
-      <input type="password" id="key-input" placeholder="Paste your key here" autocomplete="off">
+    <div class="sheet-head">
+      <h2 id="ai-title">Connect an AI</h2>
+      <button type="button" class="iconbtn" id="ai-close" aria-label="Close">Close</button>
     </div>
-    <p class="kd-msg" id="key-msg" role="alert"></p>
-    <details class="kd-adv">
-      <summary>Advanced</summary>
-      <div class="field">
-        <label class="hint" for="model-input">Gemini model name</label>
-        <input type="text" id="model-input" autocomplete="off">
-      </div>
-    </details>
-    <p class="hint">The key is saved only in this browser and is sent only to Google. Please do not share this page after saving your key.</p>
-    <div class="sheet-actions">
-      <button type="button" class="btn" id="key-save">Save and start</button>
-      <button type="button" class="btn ghost" id="key-skip">Not now</button>
-    </div>
-    <button type="button" class="link-btn" id="key-remove" hidden>Remove the saved key</button>
+    <div id="ai-box"></div>
   </div>
 </dialog>
 
@@ -574,16 +677,48 @@ dialog#cook[open] { display: flex; flex-direction: column; }
   </div>
 </dialog>
 
+<!-- Guided tour: part 1 without AI, part 2 with AI -->
+<dialog id="tour" aria-labelledby="tour-title-hidden">
+  <span id="tour-title-hidden" hidden>Guide to Food For Us</span>
+  <div class="tour">
+    <div class="tour-art" id="tour-art" aria-hidden="true"></div>
+    <div class="tour-body">
+      <div class="tour-top">
+        <div class="tdots" id="tdots" aria-hidden="true"></div>
+        <button type="button" class="skip" id="t-skip">Skip guide</button>
+      </div>
+      <div class="tour-slide" id="tour-slide" aria-live="polite"></div>
+      <div class="tour-nav">
+        <button type="button" class="btn ghost" id="t-back">Back</button>
+        <button type="button" class="btn" id="t-next">Next</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
 <script>
 (function () {
   "use strict";
+
+  /* =====================================================================
+     AI PROVIDERS. To add another one, add one object to this list.
+     kind: "gemini" | "openai" (any OpenAI-compatible chat endpoint) | "anthropic"
+     openai-kind needs `url`. vision: can it read photos?
+     ===================================================================== */
+  var PROVIDERS = [
+    { id: "gemini",     name: "Google Gemini", tag: "Free to start", kind: "gemini",    model: "gemini-flash-latest",     keyUrl: "https://aistudio.google.com/apikey",            vision: true },
+    { id: "openai",     name: "OpenAI",        tag: "ChatGPT maker", kind: "openai",    model: "gpt-4o-mini",             keyUrl: "https://platform.openai.com/api-keys",          vision: true, url: "https://api.openai.com/v1/chat/completions" },
+    { id: "anthropic",  name: "Claude",        tag: "By Anthropic",  kind: "anthropic", model: "claude-haiku-5-5",        keyUrl: "https://console.anthropic.com/settings/keys",   vision: true },
+    { id: "groq",       name: "Groq",          tag: "Free, very fast", kind: "openai",  model: "llama-3.3-70b-versatile", keyUrl: "https://console.groq.com/keys",                 vision: false, url: "https://api.groq.com/openai/v1/chat/completions" },
+    { id: "openrouter", name: "OpenRouter",    tag: "Many models",   kind: "openai",    model: "openai/gpt-4o-mini",      keyUrl: "https://openrouter.ai/keys",                    vision: true, url: "https://openrouter.ai/api/v1/chat/completions" }
+  ];
+
   var QUICK = ["Onion","Tomato","Potato","Rice","Atta (wheat flour)","Toor dal","Moong dal","Paneer","Eggs","Curd","Milk","Spinach","Cauliflower","Peas","Carrot","Capsicum","Besan","Poha","Suji (rava)","Bread","Green chilli","Ginger","Garlic","Lemon"];
   var TIMES = [[10,"Very quick"],[20,"Quick"],[30,"Relaxed"],[45,"Slow and easy"]];
   var FILTERS = [["all","All"],["veg","Vegetarian"],["quick","Under 20 min"],["ready","I can make now"]];
   var TYPES = ["Breakfast","Main meal","Snack","Sweet","Other"];
   var PANTRY = ["salt","water","oil","ghee","turmeric","haldi","chilli powder","chili powder","cumin","jeera","coriander powder","dhania","garam masala","mustard","sugar","hing","asafoetida","pepper"];
-  var GKEY = "ffu-gemini-key", GMODEL = "ffu-gemini-model", DEFAULT_MODEL = "gemini-3.5-flash";
-  var RKEY = "ffu-recipes";
+  var AIK = "ffu2-ai", RKEY = "ffu-recipes", TOURK = "ffu2-tour";
   var state = { items: [], minutes: 20, lang: "en", busy: false, ctl: null, askedNutri: false, dishes: null, filter: "all", q: "", saved: {} };
   var uid = 0;
   var $ = function (id) { return document.getElementById(id); };
@@ -625,6 +760,7 @@ dialog#cook[open] { display: flex; flex-direction: column; }
       return s;
     }).filter(Boolean);
   }
+  function restart(el, cls) { el.classList.remove("swap-in", "swap-back"); void el.offsetWidth; el.classList.add(cls); }
 
   /* ---------- text size ---------- */
   function setBig(on) {
@@ -634,22 +770,39 @@ dialog#cook[open] { display: flex; flex-direction: column; }
     b.setAttribute("aria-label", on ? "Normal text" : "Bigger text");
     b.querySelector(".lbl").textContent = on ? "Normal text" : "Bigger text";
     store("ffu-big", on ? "1" : "0");
+    setTimeout(moveAll, 60);
   }
   $("size-btn").onclick = function () { setBig(!document.body.classList.contains("big")); };
   setBig(store("ffu-big") === "1");
 
   /* ---------- tabs ---------- */
+  function moveInd(box) {
+    var ind = box.querySelector(".ind"), cur = box.querySelector("[aria-current]");
+    if (!ind) return;
+    if (!cur || !cur.offsetWidth) { ind.style.opacity = "0"; return; }
+    ind.style.opacity = "1";
+    ind.style.width = cur.offsetWidth + "px";
+    ind.style.transform = "translateX(" + cur.offsetLeft + "px)";
+  }
+  function moveAll() { moveInd($("tabs")); moveInd($("tabbar")); }
   function route() {
-    var v = location.hash === "#recipes" ? "recipes" : "cook";
-    $("view-cook").hidden = v !== "cook";
-    $("view-recipes").hidden = v !== "recipes";
+    var v = location.hash === "#cook" ? "cook" : "recipes";
+    ["cook", "recipes"].forEach(function (n) {
+      var el = $("view-" + n);
+      var show = n === v;
+      if (show && el.hidden) { el.hidden = false; el.classList.remove("enter"); void el.offsetWidth; el.classList.add("enter"); }
+      else if (!show) el.hidden = true;
+    });
     Array.prototype.forEach.call(document.querySelectorAll("[data-view]"), function (a) {
       if (a.dataset.view === v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
     if (v === "recipes") renderRecipes();
-    document.title = v === "recipes" ? "My Recipes | Food For Us" : "Food For Us";
+    document.title = v === "recipes" ? "My Recipes | Food For Us" : "Cook with AI | Food For Us";
+    moveAll();
   }
   window.addEventListener("hashchange", function () { route(); if (location.hash !== "#start") window.scrollTo(0, 0); });
+  window.addEventListener("resize", moveAll);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveAll);
 
   /* ---------- greeting ---------- */
   (function () {
@@ -659,51 +812,130 @@ dialog#cook[open] { display: flex; flex-direction: column; }
     $("hero-title").textContent = "What shall we cook for " + meal + "?";
   })();
 
-  /* ---------- Gemini key ---------- */
-  function gemKey() { return (store(GKEY) || "").trim(); }
-  function gemModel() { return (store(GMODEL) || DEFAULT_MODEL).trim() || DEFAULT_MODEL; }
-  var kdlg = $("key-dialog");
-  function refreshKeyUi() {
-    var on = !!gemKey();
-    $("key-dot").classList.toggle("on", on);
-    $("key-open-text").textContent = on ? "Key saved" : "Add key";
-    $("key-remove").hidden = !on;
-    $("kd-title").textContent = on ? "Your Gemini key" : "Welcome to Food For Us";
-    $("key-skip").textContent = on ? "Close" : "Not now";
+  /* =====================================================================
+     AI setup (provider picker + key). Used in the tour and in the dialog.
+     ===================================================================== */
+  function prov(id) { for (var i = 0; i < PROVIDERS.length; i++) if (PROVIDERS[i].id === id) return PROVIDERS[i]; return null; }
+  function loadAI() {
+    var c = null, migrated = false;
+    try { c = JSON.parse(store(AIK) || "null"); } catch (e) {}
+    if (!c || typeof c !== "object") c = { p: "gemini", keys: {}, models: {} };
+    c.keys = c.keys || {}; c.models = c.models || {};
+    var old = store("ffu-gemini-key");
+    if (old && !c.keys.gemini) { c.keys.gemini = old.trim(); migrated = true; }
+    if (!prov(c.p)) c.p = "gemini";
+    if (migrated) store(AIK, JSON.stringify(c));
+    return c;
   }
-  function openKey(msg) {
-    $("key-msg").textContent = msg || "";
-    $("model-input").value = gemModel();
-    var adv = kdlg.querySelector(".kd-adv");
-    if (adv) adv.open = /model name/i.test(msg || "");
-    refreshKeyUi();
-    if (kdlg.open) return;
-    openDlg(kdlg);
-    if (window.matchMedia && matchMedia("(hover: hover)").matches) $("key-input").focus();
+  var ai = loadAI();
+  function saveAI() { store(AIK, JSON.stringify(ai)); }
+  function cur() { return prov(ai.p) || PROVIDERS[0]; }
+  function curKey() { return (ai.keys[ai.p] || "").trim(); }
+  function curModel() { return (ai.models[ai.p] || "").trim() || cur().model; }
+  function aiReady() { return !!curKey(); }
+  function refreshAiUi() {
+    $("ai-dot").classList.toggle("on", aiReady());
+    $("ai-open-text").textContent = aiReady() ? cur().name : "Connect AI";
   }
-  $("key-open").onclick = function () { openKey(""); };
-  $("key-skip").onclick = function () { closeDlg(kdlg); };
-  kdlg.addEventListener("click", function (e) { if (e.target === kdlg) closeDlg(kdlg); });
-  $("key-save").onclick = function () {
-    var k = $("key-input").value.trim();
-    if (!k) { $("key-msg").textContent = "Please paste your key first."; $("key-input").focus(); return; }
-    store(GKEY, k);
-    store(GMODEL, $("model-input").value.trim() || DEFAULT_MODEL);
-    $("key-input").value = "";
-    refreshKeyUi();
-    closeDlg(kdlg);
-    toast("Key saved");
-  };
-  $("key-remove").onclick = function () {
-    store(GKEY, "");
-    $("key-input").value = "";
-    refreshKeyUi();
-    $("key-msg").textContent = "The key was removed from this browser.";
-  };
-  $("key-input").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); $("key-save").click(); } });
-  refreshKeyUi();
 
-  /* ---------- Gemini calls ---------- */
+  function aiForm(box, onSaved, msgText) {
+    box.textContent = "";
+    var sel = ai.p;
+    if (!(ai.keys[sel] || "").trim()) {
+      for (var pi = 0; pi < PROVIDERS.length; pi++) if ((ai.keys[PROVIDERS[pi].id] || "").trim()) { sel = PROVIDERS[pi].id; break; }
+    }
+    var provBox = h("div", { class: "provs", role: "radiogroup", "aria-label": "AI provider" });
+    var link = h("a", { target: "_blank", rel: "noopener" });
+    var inId = nid(), mdId = nid();
+    var input = h("input", { type: "password", id: inId, autocomplete: "off", "aria-label": "Your key" });
+    var model = h("input", { type: "text", id: mdId, autocomplete: "off" });
+    var msg = h("p", { class: "kd-msg", role: "alert", text: msgText || "" });
+    var save = h("button", { type: "button", class: "btn", text: "Save and continue" });
+    var rm = h("button", { type: "button", class: "link-btn", text: "Remove the saved key" });
+    var test = h("button", { type: "button", class: "btn ghost", text: "Test key" });
+    var buttons = [];
+    PROVIDERS.forEach(function (P) {
+      var sm = h("small", { text: P.tag });
+      var b = h("button", { type: "button", role: "radio", "aria-checked": "false" }, h("b", { text: P.name }), sm);
+      b.onclick = function () { sel = P.id; msg.className = "kd-msg"; msg.textContent = ""; input.value = ""; paint(); };
+      buttons.push([P, b, sm]);
+      provBox.appendChild(b);
+    });
+    function paint() {
+      var P = prov(sel);
+      buttons.forEach(function (x) {
+        x[1].setAttribute("aria-checked", String(x[0].id === sel));
+        var sv = !!(ai.keys[x[0].id] || "").trim();
+        x[2].textContent = sv ? "✓ Key saved" + (ai.p === x[0].id ? " · in use" : "") : x[0].tag;
+        x[2].style.color = sv ? "var(--accent)" : "";
+        x[2].style.fontWeight = sv ? "700" : "";
+      });
+      link.textContent = "Open " + P.name + " and create a key";
+      link.href = P.keyUrl;
+      var savedKey = (ai.keys[sel] || "").trim();
+      var saved = !!savedKey;
+      input.placeholder = saved ? "Saved: ••••" + savedKey.slice(-4) + " (paste a new key to replace it)" : "Paste your key here";
+      model.value = (ai.models[sel] || "").trim() || P.model;
+      rm.hidden = !saved;
+      save.textContent = saved && !input.value ? "Use " + P.name : "Save and continue";
+    }
+    input.addEventListener("input", paint);
+    save.onclick = function () {
+      var k = input.value.trim(), P = prov(sel);
+      if (!k && !(ai.keys[sel] || "").trim()) { msg.textContent = "Please paste your key first."; input.focus(); return; }
+      if (k) {
+        ai.keys[sel] = k;
+        var m = model.value.trim();
+        ai.models[sel] = m && m !== P.model ? m : "";
+      }
+      ai.p = sel;
+      saveAI(); refreshAiUi();
+      input.value = "";
+      paint();
+      if (onSaved) onSaved();
+    };
+    test.onclick = async function () {
+      var P = prov(sel), typed = input.value.trim(), k = typed || (ai.keys[sel] || "").trim();
+      msg.className = "kd-msg";
+      if (!k) { msg.textContent = "Paste your key first, then tap Test key."; input.focus(); return; }
+      var m = model.value.trim() || P.model;
+      test.disabled = true; test.textContent = "Testing...";
+      msg.textContent = "";
+      try {
+        var t0 = Date.now();
+        var out = await ADAPT[P.kind](P, k, m, "Reply with only this JSON object: {\"ok\":true}", [], undefined);
+        if (!out) throw { code: "empty" };
+        msg.className = "kd-msg ok";
+        msg.textContent = "Working! " + P.name + " answered in " + ((Date.now() - t0) / 1000).toFixed(1) + " seconds." + (typed ? " Tap Save to keep this key." : "");
+      } catch (e) {
+        msg.textContent = (e && e.code === "empty") ? P.name + " answered, but with nothing in it. Try the test again." : errInfo(e, P.name).text;
+      }
+      test.disabled = false; test.textContent = "Test key";
+    };
+    rm.onclick = function () { ai.keys[sel] = ""; saveAI(); refreshAiUi(); msg.textContent = "The key was removed from this browser."; paint(); };
+    input.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); save.click(); } });
+    box.appendChild(h("div", { class: "aiform" },
+      h("p", { class: "label", text: "Choose an AI" }),
+      provBox,
+      h("p", { class: "hint" }, link, " (about a minute). Then paste it here."),
+      h("div", { class: "field" }, h("label", { for: inId, text: "Your key" }), input),
+      h("details", null, h("summary", { text: "Advanced" }), h("div", { class: "field" }, h("label", { class: "hint", for: mdId, text: "Model name" }), model)),
+      msg, h("div", { class: "sheet-actions" }, save, test), rm,
+      h("p", { class: "hint", text: "The key is saved only in this browser and is sent only to the AI you choose. Please do not share this page after saving a key." })
+    ));
+    paint();
+  }
+  function openAI(msg) {
+    aiForm($("ai-box"), function () { closeDlg($("ai-dialog")); toast(cur().name + " is ready"); }, msg);
+    openDlg($("ai-dialog"));
+  }
+  $("ai-open").onclick = function () { openAI(""); };
+  $("ai-close").onclick = function () { closeDlg($("ai-dialog")); };
+  $("ai-dialog").addEventListener("click", function (e) { if (e.target === $("ai-dialog")) closeDlg($("ai-dialog")); });
+  refreshAiUi();
+
+  /* ---------- AI calls (one adapter per kind) ---------- */
+  var GAPI = "https://generativelanguage.googleapis.com/v1beta/";
   async function toB64(file) {
     var bmp = await createImageBitmap(file);
     var k = Math.min(1, 1280 / Math.max(bmp.width, bmp.height));
@@ -713,7 +945,6 @@ dialog#cook[open] { display: flex; flex-direction: column; }
     c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
     return c.toDataURL("image/jpeg", 0.85).split(",")[1];
   }
-  var API = "https://generativelanguage.googleapis.com/v1beta/";
   async function http(url, init) {
     var r;
     try { r = await fetch(url, init); }
@@ -725,76 +956,71 @@ dialog#cook[open] { display: flex; flex-direction: column; }
       var j = null;
       try { j = await r.json(); } catch (e) {}
       var er = (j && j.error) || {};
-      var reason = "";
-      (er.details || []).forEach(function (d) { if (d && d.reason && !reason) reason = d.reason; });
-      throw { code: "http_" + r.status, detail: String(er.message || ""), reason: reason };
+      throw { code: "http_" + r.status, detail: String(er.message || (typeof er === "string" ? er : "") || "") };
     }
     return r.json();
   }
-  function isKeyError(e) {
-    var c = e && e.code;
-    return c === "http_401" || c === "http_403" || (e && e.reason === "API_KEY_INVALID") || /api key/i.test((e && e.detail) || "");
-  }
-  async function pickModel(signal) {
-    var data = await http(API + "models?pageSize=200", { headers: { "x-goog-api-key": gemKey() }, signal: signal });
-    var best = null, bestScore = -1;
-    (data.models || []).forEach(function (m) {
-      var name = String(m.name || "").replace(/^models\//, "");
-      var ok = (m.supportedGenerationMethods || []).indexOf("generateContent") >= 0;
-      if (!ok || !/flash/i.test(name)) return;
-      if (/lite|image|tts|live|audio|embed|robot|computer|veo|imagen|thinking|learnlm|gemma/i.test(name)) return;
-      var v = name.match(/(\d+(?:\.\d+)?)/);
-      var score = name === "gemini-flash-latest" ? 1000 : (v ? parseFloat(v[1]) : 0) * 10 - (/preview|exp/i.test(name) ? 1 : 0);
-      if (score > bestScore) { bestScore = score; best = name; }
-    });
-    return best;
-  }
-  async function generate(model, parts, signal) {
-    var data = await http(API + "models/" + encodeURIComponent(model) + ":generateContent", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": gemKey() },
-      body: JSON.stringify({ contents: [{ parts: parts }], generationConfig: { responseMimeType: "application/json" } }),
-      signal: signal
-    });
-    var cand = data.candidates && data.candidates[0];
-    var t = cand && cand.content && cand.content.parts ? cand.content.parts.map(function (p) { return p.text || ""; }).join("") : "";
+  var ADAPT = {
+    gemini: async function (P, key, model, prompt, imgs, signal) {
+      var parts = [{ text: prompt }];
+      imgs.forEach(function (b) { parts.push({ inline_data: { mime_type: "image/jpeg", data: b } }); });
+      var d = await http(GAPI + "models/" + encodeURIComponent(model) + ":generateContent", {
+        method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": key }, signal: signal,
+        body: JSON.stringify({ contents: [{ parts: parts }], generationConfig: { responseMimeType: "application/json" } })
+      });
+      var c = d.candidates && d.candidates[0];
+      return c && c.content && c.content.parts ? c.content.parts.map(function (p) { return p.text || ""; }).join("") : "";
+    },
+    openai: async function (P, key, model, prompt, imgs, signal) {
+      var content = prompt;
+      if (imgs.length) {
+        content = [{ type: "text", text: prompt }];
+        imgs.forEach(function (b) { content.push({ type: "image_url", image_url: { url: "data:image/jpeg;base64," + b } }); });
+      }
+      var d = await http(P.url, {
+        method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key }, signal: signal,
+        body: JSON.stringify({ model: model, messages: [{ role: "user", content: content }], response_format: { type: "json_object" } })
+      });
+      var m = d.choices && d.choices[0] && d.choices[0].message;
+      return m && m.content ? String(m.content) : "";
+    },
+    anthropic: async function (P, key, model, prompt, imgs, signal) {
+      var content = [];
+      imgs.forEach(function (b) { content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: b } }); });
+      content.push({ type: "text", text: prompt });
+      var d = await http("https://api.anthropic.com/v1/messages", {
+        method: "POST", signal: signal,
+        headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+        body: JSON.stringify({ model: model, max_tokens: 4096, messages: [{ role: "user", content: content }] })
+      });
+      return (d.content || []).map(function (p) { return p.text || ""; }).join("");
+    }
+  };
+  function parseJSON(t) {
+    t = String(t || "").trim();
     if (!t) throw { code: "empty" };
-    try { return JSON.parse(t); }
-    catch (e) {
-      var m = t.match(/[\[{][\s\S]*[\]}]/);
-      if (m) { try { return JSON.parse(m[0]); } catch (e2) {} }
-      throw { code: "empty" };
-    }
+    try { return JSON.parse(t); } catch (e) {}
+    var m = t.match(/[\[{][\s\S]*[\]}]/);
+    if (m) { try { return JSON.parse(m[0]); } catch (e2) {} }
+    throw { code: "empty" };
   }
-  async function gemini(prompt, opts) {
-    var parts = [{ text: prompt }];
-    var files = (opts && opts.images) || [];
-    for (var i = 0; i < files.length; i++) {
-      try { parts.push({ inline_data: { mime_type: "image/jpeg", data: await toB64(files[i]) } }); }
-      catch (e) { throw { code: "image_rejected" }; }
+  async function ask(prompt, files, signal) {
+    var imgs = [];
+    for (var i = 0; i < (files || []).length; i++) {
+      try { imgs.push(await toB64(files[i])); } catch (e) { throw { code: "image_rejected" }; }
     }
-    var signal = opts && opts.signal;
-    try {
-      return await generate(gemModel(), parts, signal);
-    } catch (e) {
-      var modelProblem = e && (e.code === "http_404" || e.code === "http_400") && !isKeyError(e);
-      if (!modelProblem) throw e;
-      var pick = null;
-      try { pick = await pickModel(signal); }
-      catch (e2) { if (e2 && e2.code === "cancelled") throw e2; }
-      if (!pick || pick === gemModel()) throw e;
-      var out = await generate(pick, parts, signal);
-      store(GMODEL, pick);
-      return out;
-    }
+    var P = cur();
+    return parseJSON(await ADAPT[P.kind](P, curKey(), curModel(), prompt, imgs, signal));
   }
-  function errInfo(e) {
-    var c = e && e.code;
-    if (isKeyError(e)) return { text: "Gemini did not accept the key. Please copy it again from Google AI Studio and paste it with no spaces.", keyProblem: true };
-    if (c === "http_400" || c === "http_404") return { text: "Gemini could not use this request." + (e.detail ? " Google says: " + String(e.detail).slice(0, 220) : "") + " You can change the model name under Advanced.", keyProblem: true };
-    if (c === "http_429") return { text: "Gemini says there were too many requests, or the free limit is used up. Please wait a minute and try again." };
-    if (c === "http_500" || c === "http_503") return { text: "Google's service is busy right now. Please try again in a minute." };
-    if (c === "network") return { text: "Could not reach Google. Please check the internet connection and try again." };
+  function errInfo(e, nm) {
+    var c = e && e.code, name = nm || cur().name;
+    var keyBad = c === "http_401" || c === "http_403" || /api[ _-]?key|authentication|unauthor/i.test((e && e.detail) || "");
+    if (keyBad) return { text: name + " did not accept the key. Please copy it again and paste it with no spaces.", keyProblem: true };
+    if (c === "http_400" || c === "http_404") return { text: name + " could not use this request." + (e.detail ? " It says: " + String(e.detail).slice(0, 200) : "") + " You can change the model name under Advanced.", keyProblem: true };
+    if (c === "http_402") return { text: name + " says the account has no credit left.", keyProblem: true };
+    if (c === "http_429") return { text: name + " says there were too many requests, or the free limit is used up. Please wait a minute and try again." };
+    if (c === "http_500" || c === "http_502" || c === "http_503" || c === "http_529") return { text: name + " is busy right now. Please try again in a minute." };
+    if (c === "network") return { text: "Could not reach " + name + ". Please check the internet connection and try again." };
     if (c === "image_rejected") return { text: "That photo could not be read. Please try a different photo." };
     return { text: "Something went wrong. Please tap the button to try again." };
   }
@@ -861,7 +1087,8 @@ dialog#cook[open] { display: flex; flex-direction: column; }
 
   /* ---------- photo ---------- */
   $("photo-input").addEventListener("click", function (e) {
-    if (!gemKey()) { e.preventDefault(); openKey("Please add your Gemini key to read photos."); }
+    if (!aiReady()) { e.preventDefault(); openAI("Please connect an AI to read photos."); return; }
+    if (!cur().vision) { e.preventDefault(); toast(cur().name + " cannot read photos. Pick another AI, or type your list."); }
   });
   $("photo-input").onchange = async function () {
     var input = $("photo-input");
@@ -870,17 +1097,18 @@ dialog#cook[open] { display: flex; flex-direction: column; }
     var st = $("photo-status");
     st.textContent = "Looking at your photo. This can take a few seconds...";
     try {
-      var out = await gemini(
-        "These photos show food ingredients in an Indian home kitchen. List the ingredients you can clearly see, using common simple English names (for example onion, tomato, atta, toor dal, paneer). Reply with only a JSON array of short strings, such as [\"onion\",\"tomato\"]. Leave out anything that is not food.",
-        { images: files }
+      var out = await ask(
+        "These photos show food ingredients in an Indian home kitchen. List the ingredients you can clearly see, using common simple English names (for example onion, tomato, atta, toor dal, paneer). Reply with only a JSON object like {\"items\":[\"onion\",\"tomato\"]}. Leave out anything that is not food.",
+        files
       );
-      var arr = Array.isArray(out) ? out.filter(function (x) { return typeof x === "string"; }) : [];
+      var arr = Array.isArray(out) ? out : (out && Array.isArray(out.items) ? out.items : []);
+      arr = arr.filter(function (x) { return typeof x === "string"; });
       if (arr.length) { addItems(arr); st.textContent = "Added " + arr.length + " items from your photo. Please check your list and remove anything wrong."; }
       else st.textContent = "No ingredients found in that photo. Try a closer, brighter photo, or type them in.";
     } catch (e) {
       var info = errInfo(e);
       st.textContent = info.text;
-      if (info.keyProblem) openKey(info.text);
+      if (info.keyProblem) openAI(info.text);
     }
     input.value = "";
   };
@@ -898,13 +1126,18 @@ dialog#cook[open] { display: flex; flex-direction: column; }
       $("veg").checked ? "Vegetarian dishes only. No meat, fish or eggs." : "Vegetarian or non-vegetarian is fine, but prefer dishes that match the ingredients.",
       "Suggest 4 different, normal everyday Indian home dishes (sabzi, dal, rice, roti or paratha, breakfast or snack, depending on what fits). Prefer dishes that need nothing extra. A dish may need 1 or 2 missing items, but then give an easy swap using something common in an Indian home, or say it can be skipped. Use the real quantities in the ingredient list when given. Every dish must really finish within the time limit.",
       "Write all text values in " + (state.lang === "hi" ? "Hindi (Devanagari script), with the dish name in Hindi and the common English name in brackets" : "English") + ". The type field is always one of these English words: Breakfast, Main meal, Snack, Sweet, Other.",
-      "Reply with only a JSON array of 4 objects. Each object has these fields: name (string), about (one short line), minutes (number, total time), veg (true if vegetarian, false if it has meat, fish or egg), type (string), ingredients (array of strings with quantity for " + n + " people, for example \"3 medium potatoes\"), missing (array of objects with item and instead, empty array if nothing is missing), steps (array of 4 to 8 short steps)" + (wantN ? ", nutrition (object with calories, protein_g, carbs_g as numbers for ONE serving, worked out from the ingredient quantities)." : ".")
+      "Reply with only a JSON object of the form {\"dishes\":[...]} holding 4 dish objects. Each dish has these fields: name (string), about (one short line), minutes (number, total time), veg (true if vegetarian, false if it has meat, fish or egg), type (string), ingredients (array of strings with quantity for " + n + " people, for example \"3 medium potatoes\"), missing (array of objects with item and instead, empty array if nothing is missing), steps (array of 4 to 8 short steps)" + (wantN ? ", nutrition (object with calories, protein_g, carbs_g as numbers for ONE serving, worked out from the ingredient quantities)." : ".")
     ].join("\n");
   }
   function setBusy(on) {
     state.busy = on;
     $("go").disabled = on;
     $("stop").hidden = !on;
+  }
+  function skeletons() {
+    var wrap = h("div", { class: "grid" });
+    for (var i = 0; i < 4; i++) wrap.appendChild(h("div", { class: "dish skel rise", style: "--i:" + i }, h("div", { class: "sk t" }), h("div", { class: "sk" }), h("div", { class: "sk s" })));
+    return wrap;
   }
   async function suggest() {
     var res = $("results");
@@ -916,15 +1149,16 @@ dialog#cook[open] { display: flex; flex-direction: column; }
       $("item-input").focus();
       return;
     }
-    if (!gemKey()) { openKey("Please add your Gemini key to see dishes."); return; }
+    if (!aiReady()) { openAI("Please connect an AI to see dishes."); return; }
     state.askedNutri = $("nutri").checked;
     res.textContent = "";
-    res.appendChild(h("div", { class: "thinking" }, h("div", { class: "spin" }), h("p", { text: "Finding dishes you can cook. This can take up to a minute." })));
+    res.appendChild(h("div", { class: "thinking" }, h("span", { class: "dotsx" }, h("i"), h("i"), h("i")), h("p", { text: "Finding dishes you can cook. This can take up to a minute." })));
+    res.appendChild(skeletons());
     res.scrollIntoView({ block: "start" });
     setBusy(true);
     state.ctl = new AbortController();
     try {
-      var out = await gemini(buildPrompt(), { signal: state.ctl.signal });
+      var out = await ask(buildPrompt(), [], state.ctl.signal);
       var dishes = Array.isArray(out) ? out : (out && Array.isArray(out.dishes) ? out.dishes : []);
       dishes = dishes.filter(function (d) { return d && typeof d.name === "string"; });
       if (!dishes.length) throw { code: "empty" };
@@ -935,7 +1169,7 @@ dialog#cook[open] { display: flex; flex-direction: column; }
       if (e && e.code !== "cancelled") {
         var info = errInfo(e);
         res.appendChild(h("div", { class: "note bad", text: info.text }));
-        if (info.keyProblem) openKey(info.text);
+        if (info.keyProblem) openAI(info.text);
       }
     } finally {
       setBusy(false);
@@ -1040,6 +1274,7 @@ dialog#cook[open] { display: flex; flex-direction: column; }
     var mine = o.kind === "mine";
     var missing = Array.isArray(d.missing) ? d.missing.filter(function (m) { return m && m.item; }) : [];
     var steps = (Array.isArray(d.steps) ? d.steps : []).map(String);
+    var ingredients = Array.isArray(d.ingredients) ? d.ingredients : [];
     var pills = h("div", { class: "pills" });
     if (d.type) pills.appendChild(h("span", { class: "pill", text: String(d.type) }));
     if (mine && d.serves) pills.appendChild(h("span", { class: "pill", text: "Serves " + d.serves }));
@@ -1047,13 +1282,13 @@ dialog#cook[open] { display: flex; flex-direction: column; }
       pills.appendChild(missing.length
         ? h("span", { class: "pill miss", text: "Missing " + missing.length + (missing.length === 1 ? " item" : " items") })
         : h("span", { class: "pill ok", text: "You have everything" }));
-    } else if (state.items.length && d.ingredients.length) {
+    } else if (state.items.length && ingredients.length) {
       var m = matchOf(d);
       pills.appendChild(h("span", { class: "pill " + (m.have === m.total ? "ok" : "miss"), text: m.have === m.total ? "You have everything" : "You have " + m.have + " of " + m.total }));
     }
 
     var recipe = h("div", { class: "recipe", id: "recipe-" + id, hidden: "" });
-    recipe.appendChild(h("div", null, h("h4", { text: "Ingredients" }), list("ul", d.ingredients)));
+    recipe.appendChild(h("div", null, h("h4", { text: "Ingredients" }), list("ul", ingredients)));
     if (missing.length) {
       var ul = h("ul");
       missing.forEach(function (mm) { ul.appendChild(h("li", null, h("b", { text: String(mm.item) }), mm.instead ? " → " + String(mm.instead) : "")); });
@@ -1086,7 +1321,7 @@ dialog#cook[open] { display: flex; flex-direction: column; }
       actions.appendChild(sb);
     }
     var minutes = Number(d.minutes) > 0 ? num(d.minutes) : "-";
-    return h("article", { class: "dish" },
+    return h("article", { class: "dish rise" },
       h("div", { class: "dish-top" },
         h("div", { class: "mins" }, h("b", { text: minutes }), h("span", { text: "min" })),
         h("div", { class: "dish-main" }, h("h3", null, vmark(d.veg), h("span", { text: d.name })), d.about ? h("p", { text: String(d.about) }) : null, pills)
@@ -1102,7 +1337,7 @@ dialog#cook[open] { display: flex; flex-direction: column; }
     $("go-row").classList.add("done");
     res.appendChild(h("h2", { text: "You can cook these in " + state.minutes + " minutes or less" }));
     var grid = h("div", { class: "grid" });
-    state.dishes.forEach(function (d) { grid.appendChild(dishCard(d, { kind: "ai" })); });
+    state.dishes.forEach(function (d, i) { var c = dishCard(d, { kind: "ai" }); c.style.setProperty("--i", i); grid.appendChild(c); });
     res.appendChild(grid);
     res.appendChild(h("p", { class: "hint", text: "Not what you wanted? Change your list or time and tap \"What can I cook?\" again. Save dishes you like to My Recipes." }));
   }
@@ -1136,16 +1371,16 @@ dialog#cook[open] { display: flex; flex-direction: column; }
     });
   }
   function renderRecipes() {
-    var has = recipes.length > 0;
-    $("rtools").hidden = !has;
-    $("rempty").hidden = has;
-    $("rcount").textContent = has
+    var any = recipes.length > 0;
+    $("rtools").hidden = !any;
+    $("rempty").hidden = any;
+    $("rcount").textContent = any
       ? recipes.length + (recipes.length === 1 ? " recipe" : " recipes") + " saved on this device. No AI is used here."
       : "Your own family recipes, saved on this device. No AI is used here.";
     var box = $("rlist");
     box.textContent = "";
     $("rnone").hidden = true;
-    if (!has) return;
+    if (!any) return;
     var q = norm(state.q);
     var rows = recipes.map(function (r) { return { r: r, m: state.items.length ? matchOf(r) : null }; });
     rows = rows.filter(function (x) {
@@ -1165,12 +1400,12 @@ dialog#cook[open] { display: flex; flex-direction: column; }
     if (!rows.length) {
       var none = $("rnone");
       none.textContent = state.filter === "ready" && !state.items.length
-        ? "Add what you have at home on the Cook page, then this filter shows the recipes you can make right now."
+        ? "Add what you have at home on the Cook with AI page, then this filter shows the recipes you can make right now."
         : "No recipes match. Try a different word or filter.";
       none.hidden = false;
       return;
     }
-    rows.forEach(function (x) { box.appendChild(dishCard(x.r, { kind: "mine" })); });
+    rows.forEach(function (x, i) { var c = dishCard(x.r, { kind: "mine" }); c.style.setProperty("--i", Math.min(i, 8)); box.appendChild(c); });
   }
   $("r-search").addEventListener("input", function () { state.q = $("r-search").value; renderRecipes(); });
   renderFilters();
@@ -1278,12 +1513,12 @@ dialog#cook[open] { display: flex; flex-direction: column; }
     rd.onload = function () {
       try {
         var data = JSON.parse(String(rd.result));
-        var list = Array.isArray(data) ? data : data && data.recipes;
-        if (!Array.isArray(list)) throw new Error("bad");
+        var lst = Array.isArray(data) ? data : data && data.recipes;
+        if (!Array.isArray(lst)) throw new Error("bad");
         var ids = {};
         recipes.forEach(function (r) { ids[r.id] = true; });
         var added = 0;
-        list.map(cleanRecipe).filter(Boolean).forEach(function (r) { if (!ids[r.id]) { recipes.push(r); ids[r.id] = true; added += 1; } });
+        lst.map(cleanRecipe).filter(Boolean).forEach(function (r) { if (!ids[r.id]) { recipes.push(r); ids[r.id] = true; added += 1; } });
         saveRecipes();
         renderRecipes();
         toast(added ? "Added " + added + (added === 1 ? " recipe" : " recipes") : "No new recipes in that file");
@@ -1298,10 +1533,11 @@ dialog#cook[open] { display: flex; flex-direction: column; }
   var ck = { steps: [], i: 0 }, wake = null;
   async function requestWake() { try { if (navigator.wakeLock) wake = await navigator.wakeLock.request("screen"); } catch (e) { wake = null; } }
   function releaseWake() { try { if (wake) { wake.release(); wake = null; } } catch (e) {} }
-  function renderCook() {
+  function renderCook(dir) {
     var n = ck.steps.length;
     $("ck-count").textContent = "Step " + (ck.i + 1) + " of " + n;
     $("ck-step").textContent = ck.steps[ck.i];
+    restart($("ck-step"), dir < 0 ? "swap-back" : "swap-in");
     $("ck-fill").style.width = ((ck.i + 1) / n * 100) + "%";
     $("ck-back").disabled = ck.i === 0;
     $("ck-next").textContent = ck.i === n - 1 ? "Done" : "Next step";
@@ -1314,12 +1550,12 @@ dialog#cook[open] { display: flex; flex-direction: column; }
     var ul = $("ck-ing");
     ul.textContent = "";
     (Array.isArray(d.ingredients) ? d.ingredients : []).forEach(function (s) { ul.appendChild(h("li", { text: String(s) })); });
-    renderCook();
+    renderCook(1);
     openDlg($("cook"));
     requestWake();
   }
-  $("ck-next").onclick = function () { if (ck.i >= ck.steps.length - 1) closeDlg($("cook")); else { ck.i += 1; renderCook(); } };
-  $("ck-back").onclick = function () { if (ck.i > 0) { ck.i -= 1; renderCook(); } };
+  $("ck-next").onclick = function () { if (ck.i >= ck.steps.length - 1) closeDlg($("cook")); else { ck.i += 1; renderCook(1); } };
+  $("ck-back").onclick = function () { if (ck.i > 0) { ck.i -= 1; renderCook(-1); } };
   $("ck-close").onclick = function () { closeDlg($("cook")); };
   $("cook").addEventListener("close", releaseWake);
   $("cook").addEventListener("keydown", function (e) {
@@ -1327,10 +1563,92 @@ dialog#cook[open] { display: flex; flex-direction: column; }
     else if (e.key === "ArrowLeft") $("ck-back").click();
   });
 
+  /* =====================================================================
+     Guided tour. Part 1 needs no AI. Part 2 introduces AI and asks for a key.
+     ===================================================================== */
+  var SAMPLE = {
+    id: "sample-aloo-jeera", name: "Aloo jeera (sample)", minutes: 20, serves: 4, type: "Main meal", veg: true,
+    ingredients: ["3 medium potatoes, boiled", "1 tsp cumin seeds (jeera)", "2 tbsp oil", "1/2 tsp turmeric", "Salt to taste", "A little fresh coriander"],
+    steps: ["Peel the boiled potatoes and cut them into small pieces.", "Heat the oil in a pan on medium flame.", "Add the cumin seeds and wait until they sizzle.", "Add turmeric, then the potatoes and salt. Mix well.", "Cook for 5 minutes, stirring now and then. Add coriander and serve hot."],
+    notes: "This is a sample recipe from the guide. Edit or delete it any time."
+  };
+  var ART = {
+    bowl: '<div><svg viewBox="0 0 200 170" fill="none" style="width:100%;overflow:visible"><g stroke="#f6f3e8" stroke-width="5" stroke-linecap="round" opacity=".9"><path class="stm" d="M70 48c-9-9 9-15 0-27"/><path class="stm" d="M100 48c-9-9 9-15 0-27"/><path class="stm" d="M130 48c-9-9 9-15 0-27"/></g><path d="M22 78h156c0 40-34 70-78 70S22 118 22 78z" fill="#f0b429"/><path d="M22 78h156" stroke="#f6f3e8" stroke-width="6" stroke-linecap="round"/><ellipse cx="100" cy="158" rx="52" ry="6" fill="#000" opacity=".18"/></svg></div>',
+    save: '<div class="mock"><span class="tag">New recipe</span><div><span class="typed">Mummy\'s aloo jeera</span></div><div class="ln" style="width:90%"></div><div class="ln" style="width:70%"></div><div class="ln" style="width:80%"></div><div class="ln" style="width:55%"></div></div>',
+    find: '<div class="mock"><div class="row2" style="background:rgba(255,255,255,.18)">&#128269; <span>jeera</span></div><div class="row2 hi">Aloo jeera <span style="margin-left:auto">20 min</span></div><div class="row2">Jeera rice <span style="margin-left:auto">25 min</span></div><div class="row2">Jeera aloo paratha <span style="margin-left:auto">30 min</span></div></div>',
+    cook: '<div class="mock"><span class="tag">Step 3 of 5</span><div class="pbar"><span></span></div><p class="bigstep">Add the cumin seeds and wait until they sizzle.</p></div>',
+    backup: '<div class="mock" style="align-items:center;text-align:center"><svg viewBox="0 0 64 64" width="84" fill="none" stroke="#f0b429" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="animation:bob 3.5s ease-in-out infinite"><path d="M16 6h22l12 12v40H16z"/><path d="M38 6v12h12M32 28v18M24 38l8 8 8-8"/></svg><b style="font-family:var(--font-display);font-size:1.2rem">food-for-us-recipes.json</b></div>',
+    ai: '<div class="mock"><div class="floaty"><span>Onion</span><span>Tomato</span><span>Paneer</span><span>Rice</span><span>Peas</span></div><div class="row2 hi" style="margin-top:6px">Matar paneer <span style="margin-left:auto">25 min</span></div></div>',
+    keys: '<div class="mock"><div class="floaty"><span>Gemini</span><span>OpenAI</span><span>Claude</span><span>Groq</span><span>OpenRouter</span></div></div>'
+  };
+  var TOUR = [
+    { part: "Welcome", t: "Your family kitchen, in one place.", p: "This takes two minutes. First, the part that needs no AI at all: saving and cooking your own recipes. After that, the optional AI part that suggests dishes from what you have.", art: "bowl" },
+    { part: "Part 1 · No AI needed", t: "Save your own recipes", p: "Go to My Recipes and tap Add a recipe. Type the name, then the ingredients one on each line, then the steps one on each line. Everything stays on this device and works without internet.", art: "save", act: "sample" },
+    { part: "Part 1 · No AI needed", t: "Find any recipe in a second", p: "Search by name or by an ingredient. Use the filters for vegetarian or quick dishes. \"I can make now\" checks your recipes against the ingredients you list on the Cook with AI page.", art: "find" },
+    { part: "Part 1 · No AI needed", t: "Cook one step at a time", p: "Open any recipe and tap Start cooking. You see one big step at a time, and the screen stays awake while your hands are busy.", art: "cook", act: "try" },
+    { part: "Part 1 · No AI needed", t: "Keep your recipes safe", p: "Recipes live in this browser. Tap Download backup now and then. Restore that file on another phone or computer to bring everything along.", art: "backup" },
+    { part: "Part 2 · AI, optional", ai: true, t: "Cook from what you have", p: "On the Cook with AI page, list what is in your kitchen or add a photo. Choose your time. The AI suggests dishes with full recipes and swaps for anything missing. You can save any dish to My Recipes.", art: "ai" },
+    { part: "Part 2 · AI, optional", ai: true, t: "Connect an AI", p: "Pick one and paste its key. Several have a free option. You can skip this and do it later.", art: "keys", form: true }
+  ];
+  var tour = { i: 0, dir: 1 };
+  function sampleSaved() { return recipes.some(function (r) { return r.id === SAMPLE.id; }); }
+  function renderTour() {
+    var s = TOUR[tour.i], last = tour.i === TOUR.length - 1;
+    var dots = $("tdots");
+    dots.textContent = "";
+    TOUR.forEach(function (x, i) { dots.appendChild(h("i", { class: (i <= tour.i ? "on" : "") + (x.ai ? " ai" : "") })); });
+    $("tour-art").innerHTML = ART[s.art];
+    var slide = h("div", { class: "tour-slide " + (tour.dir > 0 ? "fwd" : "back"), id: "tour-slide" });
+    slide.appendChild(h("span", { class: "badge" + (s.ai ? " ai" : ""), text: s.part }));
+    slide.appendChild(h("h2", { text: s.t }));
+    slide.appendChild(h("p", { text: s.p }));
+    if (s.act === "sample") {
+      var b = h("button", { type: "button", class: "btn ghost", text: sampleSaved() ? "Sample added \u2713" : "Add a sample recipe to try" });
+      if (sampleSaved()) b.disabled = true;
+      b.onclick = function () {
+        var rec = cleanRecipe(SAMPLE);
+        recipes.unshift(rec);
+        if (!saveRecipes()) { recipes.shift(); return; }
+        renderRecipes();
+        b.textContent = "Sample added \u2713"; b.disabled = true;
+        toast("Added to My Recipes");
+      };
+      slide.appendChild(b);
+    }
+    if (s.act === "try") {
+      var t = h("button", { type: "button", class: "btn ghost", text: "Try it with the sample" });
+      t.onclick = function () { openCook(cleanRecipe(SAMPLE)); };
+      slide.appendChild(t);
+    }
+    if (s.form) {
+      var box = h("div");
+      slide.appendChild(box);
+      aiForm(box, function () { toast(cur().name + " is ready"); finishTour(true); });
+    }
+    var old = $("tour-slide");
+    old.parentNode.replaceChild(slide, old);
+    $("t-back").style.visibility = tour.i === 0 ? "hidden" : "visible";
+    $("t-next").textContent = last ? (aiReady() ? "Finish" : "Skip for now") : (tour.i === 0 ? "Start the guide" : "Next");
+    $("t-next").className = "btn" + (last ? " ghost" : "");
+  }
+  function openTour() { tour = { i: 0, dir: 1 }; renderTour(); openDlg($("tour")); }
+  function finishTour(goAI) {
+    store(TOURK, "1");
+    closeDlg($("tour"));
+    var target = goAI === true || (aiReady() && tour.i === TOUR.length - 1) ? "#cook" : "#recipes";
+    if (location.hash === target) route(); else location.hash = target;
+  }
+  $("t-next").onclick = function () { if (tour.i >= TOUR.length - 1) finishTour(false); else { tour.i += 1; tour.dir = 1; renderTour(); } };
+  $("t-back").onclick = function () { if (tour.i > 0) { tour.i -= 1; tour.dir = -1; renderTour(); } };
+  $("t-skip").onclick = function () { finishTour(false); };
+  $("tour").addEventListener("close", function () { store(TOURK, "1"); });
+  $("guide-btn").onclick = openTour;
+  $("guide-btn-2").onclick = openTour;
+
   /* ---------- start ---------- */
   renderItems();
   route();
-  if (!gemKey() && location.hash !== "#recipes") openKey("");
+  if (store(TOURK) !== "1") openTour();
 })();
 </script>
 </body>
