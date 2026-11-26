@@ -1150,7 +1150,7 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
     var keyBad = c === "http_401" || c === "http_403" || /api[ _-]?key|authentication|unauthor/i.test((e && e.detail) || "");
     var onShared = ai.p === "host" && (!nm || nm === cur().name);
     if (onShared && (c === "http_429" || /quota|rate.?limit|exhausted/i.test((e && e.detail) || ""))) return { text: "The Host API (the developer's key) has run out for now. Please pick Google Gemini or another AI and add your own free key to keep cooking.", keyProblem: true };
-    if (onShared && keyBad) return { text: "The Host API (the developer's key) is not working right now. Please pick Google Gemini or another AI and add your own free key.", keyProblem: true };
+    if (onShared && keyBad) return { text: "Host API key limit exceeded. Please pick Google Gemini or another AI and add your own free key.", keyProblem: true };
     if (keyBad) return { text: name + " did not accept the key. If you pasted your own, please copy it again with no spaces.", keyProblem: true };
     if (c === "http_400" || c === "http_404") return { text: name + " could not use this request." + (e.detail ? " It says: " + String(e.detail).slice(0, 200) : "") + " You can change the model name under Advanced.", keyProblem: true };
     if (c === "http_402") return { text: name + " says the account has no credit left.", keyProblem: true };
