@@ -579,6 +579,15 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
 .thumbs:empty { display: none; }
 .thumbs img { width: 64px; height: 64px; object-fit: cover; border: 2.5px solid var(--ink); border-radius: 14px; }
 @media (hover: none) { .drop { display: none; } }
+.addrow input[type="number"] { flex: 0 1 96px; width: auto; min-height: 54px; }
+.addrow select { flex: 0 1 120px; width: auto; min-height: 54px; }
+.lrow.shopr { flex-wrap: wrap; }
+.lrow.shopr .tx { flex: 1 1 130px; }
+.qty { display: flex; align-items: center; gap: 4px; flex: none; }
+.qty button { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--ink); background: var(--paper); font-weight: 800; line-height: 1; padding: 0; }
+.qty button:active { transform: scale(0.9); }
+.qty b { min-width: 4.4ch; text-align: center; font-size: 0.85em; font-variant-numeric: tabular-nums; }
+@media (max-width: 800px) { .addrow input[type="number"], .addrow select { flex: 1 1 40%; } }
 </style>
 </head>
 <body>
@@ -828,6 +837,8 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
     <section class="card">
       <div class="addrow">
         <input type="text" id="shop-input" placeholder="Add an item, e.g. 1 kg onion" autocomplete="off" enterkeyhint="done" aria-label="Add a shopping item" list="dl-items">
+        <input type="number" id="shop-qty" inputmode="decimal" min="0" step="any" placeholder="Qty" aria-label="Quantity">
+        <select id="shop-unit" aria-label="Unit"></select>
         <button type="button" class="btn" id="shop-add">Add</button>
       </div>
       <div class="stack" id="shop-list" aria-live="polite"></div>
@@ -852,6 +863,8 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
     <section class="card">
       <div class="addrow">
         <input type="text" id="pantry-input" placeholder="What did you buy? e.g. Spinach" autocomplete="off" enterkeyhint="done" aria-label="Item name" list="dl-items">
+        <input type="number" id="pantry-qty" inputmode="decimal" min="0" step="any" placeholder="Qty" aria-label="Quantity">
+        <select id="pantry-unit" aria-label="Unit"></select>
         <input type="date" id="pantry-date" aria-label="Expiry date (optional)">
         <button type="button" class="btn" id="pantry-add">Add</button>
       </div>
@@ -1650,7 +1663,7 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
     var parts = [t.replace(/\([^)]*\)/g, " "), inner ? inner[1] : ""];
     parts.forEach(function (p) {
       p = p.replace(/^[\d\s./½¼¾-]+/, "")
-        .replace(/^(kgs?|gms?|grams?|g|cups?|tbsp|tsp|pcs?|pieces?|small|medium|large|packet|bunch)\b\s*/, "")
+        .replace(/^(kgs?|gms?|grams?|g|ml|l|ltr|litres?|liters?|dozen|cups?|tbsp|tsp|pcs?|pieces?|small|medium|large|packets?|bunch)\b\s*/, "")
         .replace(/^of\s+/, "").replace(/\s+/g, " ").trim();
       p = p.replace(/(es|s)$/, "");
       if (p.length >= 3) keys.push(p);
@@ -2366,6 +2379,26 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
   $("surprise").addEventListener("click", function (e) { if (e.target === $("surprise")) closeDlg($("surprise")); });
   $("t-surprise").onclick = openSurprise;
 
+
+  /* ---- quantities and units ---- */
+  var UNITS = [["kg", "kg"], ["g", "g"], ["l", "L"], ["ml", "ml"], ["pcs", "pcs"], ["dozen", "dozen"], ["packet", "packet"], ["bunch", "bunch"]];
+  var UN = { g: "g", gm: "g", gms: "g", gram: "g", grams: "g", kg: "kg", kgs: "kg", ml: "ml", l: "l", lt: "l", ltr: "l", litre: "l", litres: "l", liter: "l", liters: "l", pc: "pcs", pcs: "pcs", piece: "pcs", pieces: "pcs", dozen: "dozen", packet: "packet", packets: "packet", pack: "packet", bunch: "bunch", bunches: "bunch" };
+  var STEP = { g: 50, kg: 0.5, ml: 100, l: 0.5, pcs: 1, dozen: 1, packet: 1, bunch: 1 };
+  function fmtN(n) { return String(Math.round(Number(n) * 100) / 100); }
+  function unitLabel(u) { for (var i = 0; i < UNITS.length; i++) if (UNITS[i][0] === u) return UNITS[i][1]; return u; }
+  function qLabel(qty, unit) { return fmtN(qty) + " " + unitLabel(unit); }
+  function parseQ(t) {
+    var m = String(t).trim().match(/^(\d+(?:\.\d+)?)\s*(.*)$/);
+    if (!m || !m[2]) return null;
+    var qty = parseFloat(m[1]); if (!(qty > 0)) return null;
+    var w = m[2].match(/^([a-z]+)\b\s*(.*)$/i);
+    if (w && UN[w[1].toLowerCase()] && w[2]) return { qty: qty, unit: UN[w[1].toLowerCase()], name: w[2] };
+    if (/^[a-z]/i.test(m[2])) return { qty: qty, unit: "pcs", name: m[2] };
+    return null;
+  }
+  ["shop-unit", "pantry-unit"].forEach(function (id) { UNITS.forEach(function (u) { $(id).appendChild(h("option", { value: u[0], text: u[1] })); }); });
+  function pLabel(p) { return (p.qty > 0 ? qLabel(p.qty, p.unit) + " " : "") + p.name; }
+
   /* ---- Pantry ---- */
   function expiring(days) { return pantry.filter(function (p) { return p.exp && dayDiff(p.exp) <= days; }).sort(function (a, b) { return a.exp < b.exp ? -1 : 1; }); }
   function pBadge(p) {
@@ -2377,14 +2410,18 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
     return ["ok", d + " days left"];
   }
   function savePantry() { return jset(FK, pantry); }
-  function addPantry(name, exp) {
-    name = pretty(String(name).trim().slice(0, 60));
+  function addPantry(name, exp, qty, unit) {
+    name = String(name).trim().slice(0, 60);
+    if (!(qty > 0)) { var q = parseQ(name); if (q) { qty = q.qty; unit = q.unit; name = q.name; } }
+    name = pretty(name);
     if (!name) return false;
-    pantry.push({ id: uidv(), name: name, exp: exp || "" });
+    var p = { id: uidv(), name: name, exp: exp || "" };
+    if (qty > 0) { p.qty = qty; p.unit = unit || "pcs"; }
+    pantry.push(p);
     return savePantry();
   }
   function cookWith(list) {
-    var names = list.map(function (p) { return p.name; }).slice(0, 15);
+    var names = list.map(pLabel).slice(0, 15);
     if (!names.length) { toast("Add items to your pantry first"); return; }
     state.items = [];
     addItems(names);
@@ -2402,7 +2439,7 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
     rows.forEach(function (p) {
       var b = pBadge(p), used = h("button", { type: "button", class: "used", text: "Used up", "aria-label": "Mark " + p.name + " as used up" });
       used.onclick = function () { pantry = pantry.filter(function (x) { return x.id !== p.id; }); savePantry(); renderPantry(); };
-      box.appendChild(h("div", { class: "lrow" }, h("div", { class: "tx" }, p.name), b ? h("span", { class: "pill " + b[0], text: b[1] }) : null, used));
+      box.appendChild(h("div", { class: "lrow" }, h("div", { class: "tx" }, p.name, p.qty > 0 ? h("small", { text: qLabel(p.qty, p.unit) }) : null), b ? h("span", { class: "pill " + b[0], text: b[1] }) : null, used));
     });
   }
   (function () {
@@ -2416,7 +2453,8 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
   function doPantryAdd() {
     var n = $("pantry-input").value;
     if (!n.trim()) { $("pantry-input").focus(); return; }
-    if (addPantry(n, $("pantry-date").value)) { $("pantry-input").value = ""; $("pantry-date").value = ""; renderPantry(); sfx("pop"); }
+    var pq = parseFloat($("pantry-qty").value);
+    if (addPantry(n, $("pantry-date").value, pq > 0 ? pq : 0, $("pantry-unit").value)) { $("pantry-input").value = ""; $("pantry-date").value = ""; $("pantry-qty").value = ""; renderPantry(); sfx("pop"); }
     $("pantry-input").focus();
   }
   $("pantry-add").onclick = doPantryAdd;
@@ -2433,6 +2471,7 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
   function addShop(text, src, fromPlan) {
     text = String(text).trim().slice(0, 80);
     if (!text) return 0;
+    if (!fromPlan) { var pq = parseQ(text); if (pq) return putQ(pq.name, pq.qty, pq.unit, src); }
     var l = text.toLowerCase(), k = keyOf(text);
     if (fromPlan && (STAPLE_RE.some(function (r) { return r.test(l); }) || inPantry(text))) return 0;
     for (var i = 0; i < shop.length; i++) {
@@ -2443,6 +2482,36 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
     }
     shop.push({ id: uidv(), text: pretty(text), done: false, src: src || "" });
     return 1;
+  }
+  function qtext(s) { return qLabel(s.qty, s.unit) + " " + s.name; }
+  function putQ(name, qty, unit, src) {
+    name = pretty(String(name).trim().slice(0, 60));
+    if (!name || !(qty > 0)) return 0;
+    var k = keyOf(name);
+    for (var i = 0; i < shop.length; i++) {
+      var s = shop[i];
+      if (keyOf(s.name || s.text) !== k) continue;
+      var old = s.qty, nq = s.unit === unit && old > 0 ? old + qty : qty;
+      if (s.price != null) s.price = s.unit === unit && old > 0 ? Math.round(s.price * nq / old) : null;
+      s.name = s.name || name; s.qty = nq; s.unit = unit; s.text = qtext(s); s.done = false;
+      return 0;
+    }
+    var it = { id: uidv(), name: name, qty: qty, unit: unit, done: false, src: src || "" };
+    it.text = qtext(it);
+    shop.push(it);
+    return 1;
+  }
+  function qtyCtl(it) {
+    if (!(it.qty > 0)) return null;
+    function bump(dir) {
+      var st = STEP[it.unit] || 1, old = it.qty, nq = Math.round((old + dir * st) * 100) / 100;
+      if (nq <= 0) return;
+      if (it.price != null) it.price = Math.round(it.price * nq / old);
+      it.qty = nq; it.text = qtext(it); jset(LK, shop); renderShop();
+    }
+    var m = h("button", { type: "button", "aria-label": "Less " + it.name, text: "\u2212" }), p = h("button", { type: "button", "aria-label": "More " + it.name, text: "+" });
+    m.onclick = function () { bump(-1); }; p.onclick = function () { bump(1); };
+    return h("div", { class: "qty" }, m, h("b", { text: qLabel(it.qty, it.unit) }), p);
   }
   function planRecipes() {
     var out = [], seen = {};
@@ -2471,14 +2540,15 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
       tick.onclick = function () { it.done = !it.done; jset(LK, shop); sfx(it.done ? "ok" : "soft"); renderShop(); };
       var x = h("button", { type: "button", class: "x", "aria-label": "Remove " + it.text, text: "×" });
       x.onclick = function () { shop = shop.filter(function (s) { return s.id !== it.id; }); jset(LK, shop); renderShop(); };
-      box.appendChild(h("div", { class: "lrow" + (it.done ? " done" : "") }, tick, h("div", { class: "tx" }, it.text, it.src ? h("small", { text: "for " + it.src }) : null), priceChip(it), x));
+      box.appendChild(h("div", { class: "lrow shopr" + (it.done ? " done" : "") }, tick, h("div", { class: "tx" }, (it.qty > 0 ? it.name : it.text), it.src ? h("small", { text: "for " + it.src }) : null), qtyCtl(it), priceChip(it), x));
     });
   }
   function doShopAdd() {
     var parts = $("shop-input").value.split(/[,\n;]+/);
-    var n = 0; parts.forEach(function (p) { n += addShop(p, "", false); });
+    var qv = parseFloat($("shop-qty").value), n = 0;
+    parts.forEach(function (p) { p = p.trim(); if (!p) return; if (parts.length === 1 && qv > 0 && !parseQ(p)) n += putQ(p, qv, $("shop-unit").value, ""); else n += addShop(p, "", false); });
     if (parts.join("").trim()) { jset(LK, shop); renderShop(); sfx("pop"); }
-    $("shop-input").value = ""; $("shop-input").focus();
+    $("shop-input").value = ""; $("shop-qty").value = ""; $("shop-input").focus();
   }
   $("shop-add").onclick = doShopAdd;
   $("shop-input").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); doShopAdd(); } });
@@ -2487,7 +2557,7 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
   $("shop-bought").onclick = function () {
     var got = shop.filter(function (x) { return x.done; });
     if (!got.length) { toast("Tick the things you bought first"); return; }
-    got.forEach(function (x) { var k = coreKeys(x.text); addPantry(k.length ? k[0] : x.text, ""); });
+    got.forEach(function (x) { var k = coreKeys(x.text); if (x.qty > 0) addPantry(x.name, "", x.qty, x.unit); else addPantry(k.length ? k[0] : x.text, ""); });
     shop = shop.filter(function (x) { return !x.done; }); jset(LK, shop);
     toast("Moved " + got.length + " to your Pantry"); renderShop();
   };
@@ -2606,7 +2676,7 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
 
   /* ---- tiny extras ---- */
   $("t-art").innerHTML = POT;
-  $("from-pantry").onclick = function () { if (!pantry.length) { toast("Your Pantry is empty. Add items there first."); return; } var names = pantry.slice().sort(function (a, b) { return (a.exp || "9999") < (b.exp || "9999") ? -1 : 1; }).map(function (p) { return p.name; }); addItems(names.slice(0, 20)); toast("Added from your Pantry"); };
+  $("from-pantry").onclick = function () { if (!pantry.length) { toast("Your Pantry is empty. Add items there first."); return; } var names = pantry.slice().sort(function (a, b) { return (a.exp || "9999") < (b.exp || "9999") ? -1 : 1; }).map(pLabel); addItems(names.slice(0, 20)); toast("Added from your Pantry"); };
   document.addEventListener("keydown", function (e) {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     var t = e.target, typing = t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName);
@@ -2751,7 +2821,7 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
     var todo = shop.filter(function (x) { return x.price == null; }); if (!todo.length) todo = shop.slice();
     var btn = $("shop-price"); btn.disabled = true; btn.textContent = "Checking prices...";
     var prompt = ["You help an Indian family estimate a grocery bill.",
-      "Give the approximate current retail price in Indian rupees (₹) at a normal local market or kirana store for each item below, for exactly the quantity written. If no quantity is written, assume a normal household purchase (for example 1 kg of vegetables, 1 packet of milk, 1 dozen eggs). Prices must be whole numbers.",
+      "Give the approximate current retail price in Indian rupees (₹) at a normal local market or kirana store for each item below, for exactly the quantity written, so the total is a proper estimate. Units: g and kg are weight, ml and L are volume, pcs is a count of single pieces, dozen is 12 pieces, packet is one normal shop packet, bunch is one normal bunch. Do not price one unit when more is written. If no quantity is written, assume a normal household purchase (for example 1 kg of vegetables, 1 packet of milk, 1 dozen eggs). Prices are for the whole quantity of that line, as whole numbers.",
       "Reply with only JSON like {\"prices\":[{\"n\":0,\"price\":40}]} with one entry for every item, where n is the item number given.",
       "Items:\n" + todo.map(function (x, i) { return i + ". " + x.text; }).join("\n")].join("\n");
     try {
