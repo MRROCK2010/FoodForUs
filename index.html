@@ -3,10 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="format-detection" content="telephone=no">
 <meta name="theme-color" content="#ffc93c">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%8D%B2%3C/text%3E%3C/svg%3E">
 <title>Food For Us</title>
 <meta name="description" content="Save your family recipes and cook step by step. Let a friendly AI suggest dishes from what is in your kitchen.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -356,6 +355,13 @@ dialog#cook[open] { display: flex; flex-direction: column; animation: fade 0.35s
 .ck-nav { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; flex: none; }
 .ck-nav .btn { min-height: 72px; font-size: 1.3rem; font-family: var(--font-display); font-weight: 800; }
 
+.ck-tools { display: flex; gap: 10px; flex-wrap: wrap; flex: none; }
+.ck-tools .btn { min-height: 52px; flex: 1 1 180px; background: var(--paper); font-variant-numeric: tabular-nums; }
+.ck-tools .btn[aria-pressed="true"] { background: var(--leaf); }
+.ck-tools .btn.run { background: var(--pink); animation: pulse 1s ease-in-out infinite; }
+.ck-tools .btn.ring { background: var(--tomato); animation: pulse 0.5s ease-in-out infinite; }
+@keyframes pulse { 50% { transform: scale(1.03); } }
+.ck-step mark { background: var(--paper); border: 2px solid var(--ink); border-radius: 10px; padding: 0 8px; }
 #toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px) scale(0.9); background: var(--ink); color: var(--paper); padding: 12px 22px; border-radius: 999px; font-weight: 800; opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.4s var(--ease); z-index: 100; max-width: calc(100vw - 32px); text-align: center; border: 2.5px solid var(--ink); }
 #toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
 
@@ -475,13 +481,111 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
   .btn:hover, .dish:hover, .chip:hover, .seg button:hover, .provs button:hover, .brand:hover .logo { transform: none; box-shadow: inherit; }
   .btn.ghost:hover, .iconbtn:hover, .tab:hover, .skip:hover { background: inherit; color: inherit; }
 }
+/* ---------- kitchen suite: today, week plan, shopping, pantry ---------- */
+.tabs .tab { padding: 6px 14px; white-space: nowrap; }
+#ai-open-text, .brand span { white-space: nowrap; }
+@media (min-width: 801px) and (max-width: 1080px) { .tab svg { display: none; } .tab { padding: 6px 12px; } }
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.tile { display: flex; flex-direction: column; gap: 2px; border: var(--bw) solid var(--ink); border-radius: 22px; padding: 14px 16px; box-shadow: var(--sh-s); text-decoration: none; color: var(--ink); transition: transform 0.3s var(--ease), box-shadow 0.3s; }
+.tile:nth-child(1) { background: var(--leaf-soft); }
+.tile:nth-child(2) { background: var(--sky); }
+.tile:nth-child(3) { background: var(--pink); }
+.tile:hover { transform: translate(-2px, -3px) rotate(-0.6deg); box-shadow: 6px 7px 0 var(--ink); }
+.tile b { font-family: var(--font-display); font-size: 2.2rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.tile span { font-weight: 800; }
+.tile small { color: var(--ink); opacity: 0.7; font-weight: 700; }
+.addrow { display: flex; gap: 10px; flex-wrap: wrap; }
+.addrow input[type="text"] { flex: 1 1 200px; }
+.addrow input[type="date"] { flex: 0 1 190px; width: auto; min-height: 54px; padding: 10px 14px; border: var(--bw) solid var(--ink); border-radius: 15px; background: var(--paper); font-weight: 600; }
+.addrow .btn { flex: 0 0 auto; }
+.days { grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); }
+.day { gap: 12px; }
+.day h3 { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 1.35rem; }
+.day h3 small { color: var(--muted); font-family: var(--font-body); font-weight: 700; font-size: 0.7em; }
+.day.today { background: #fff8e1; box-shadow: 6px 6px 0 var(--tomato), 6px 6px 0 2px var(--ink); }
+.slot { display: grid; grid-template-columns: 84px 1fr auto; gap: 8px; align-items: center; }
+.slot > label { font-weight: 800; font-size: 0.9em; }
+.slot select { min-height: 46px; font-size: 0.95em; padding: 6px 10px; }
+.slot .gob { min-height: 46px; min-width: 46px; padding: 0; border-radius: 13px; font-size: 1.1rem; }
+.lrow { display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 6px 8px 6px 8px; border: 2.5px solid var(--ink); border-radius: 18px; background: var(--paper); animation: pop 0.3s var(--ease) both; }
+.lrow .tick { width: 38px; height: 38px; border-radius: 11px; border: 2.5px solid var(--ink); background: #fff; font-weight: 800; flex: none; font-size: 1.1rem; }
+.lrow.done .tick { background: var(--leaf); }
+.lrow .tx { flex: 1; min-width: 0; overflow-wrap: anywhere; font-weight: 800; }
+.lrow.done .tx { text-decoration: line-through; opacity: 0.55; }
+.lrow small { display: block; color: var(--muted); font-weight: 600; font-size: 0.78em; }
+.lrow .x { border: 2px solid var(--ink); background: var(--pink); width: 38px; height: 38px; border-radius: 50%; font-weight: 800; flex: none; }
+.lrow .used { border: 2px solid var(--ink); background: var(--leaf-soft); border-radius: 12px; min-height: 38px; padding: 0 12px; font-weight: 800; flex: none; }
+.stack { display: flex; flex-direction: column; gap: 10px; }
+.pill.bad { background: var(--pink); }
+.pill.warn { background: var(--sun); }
+.spin { min-height: 220px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 12px; padding: 6px; }
+.spin .reel { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.9rem, 6vw, 2.7rem); line-height: 1.1; overflow-wrap: anywhere; }
+.spin .reel.rolling { animation: dots 0.25s ease-in-out infinite; color: var(--muted); }
+.spin .pills { justify-content: center; }
+.scaler { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.scaler button { width: 44px; height: 44px; border-radius: 50%; border: 2.5px solid var(--ink); background: var(--paper); font-weight: 800; font-size: 1.3rem; line-height: 1; }
+.scaler button:active { transform: scale(0.9); }
+.scaler b { min-width: 2ch; text-align: center; font-family: var(--font-display); font-size: 1.4rem; }
+.kbd { display: inline-block; border: 2px solid var(--ink); border-radius: 7px; padding: 0 7px; background: var(--paper); font-weight: 800; font-size: 0.85em; }
+.deskonly { display: none; }
+@media (min-width: 801px) { .deskonly { display: block; } .page { padding-top: 30px; } }
+@media (min-width: 1200px) { .topbar-in, .page, footer { max-width: 1180px; } }
+@media (max-width: 800px) {
+  .tabbar { grid-template-columns: repeat(6, 1fr); max-width: 520px; padding: 5px; }
+  .tabbar > a, .tabbar > button { font-size: 0.66rem; min-height: 56px; border-radius: 16px; }
+  .tabbar svg { width: 22px; height: 22px; }
+  .tabbar .ind { border-radius: 16px; }
+  .tiles { gap: 8px; }
+  .tile { padding: 10px 12px; border-radius: 18px; }
+  .tile b { font-size: 1.7rem; }
+  .tile span { font-size: 0.8em; line-height: 1.15; }
+  .tile small { display: none; }
+  #view-today .hero .hero-copy .btn { display: inline-flex !important; }
+  #view-today .hero .hero-copy .row { gap: 8px; }
+  .page-head .row { flex: 1 1 100% !important; min-width: 0; }
+  .page-head .row .btn { flex: 1 1 100%; }
+  .days { grid-template-columns: 1fr; }
+  .slot { grid-template-columns: 74px 1fr auto; }
+  .addrow .btn { flex: 1 1 100%; }
+  .addrow input[type="date"] { flex: 1 1 100%; }
+}
+
+/* ===== v3 additions: impact, voice, Dadi mode, install ===== */
+.mic { min-width: 46px; padding: 0 10px; font-size: 1.15rem; flex: 0 0 auto; }
+.mic.live { background: var(--tomato); animation: micpulse 1s infinite; }
+@keyframes micpulse { 50% { box-shadow: 0 3px 0 var(--ink), 0 0 0 7px rgba(255,106,77,.35); } }
+.score { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.score > div { border: 2px solid var(--ink); border-radius: 16px; padding: 10px 8px; text-align: center; background: var(--paper-2); }
+.score b { display: block; font-family: var(--font-display); font-size: 1.8rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.score small { font-weight: 800; color: var(--muted); }
+.lvl { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.lvl .pill { background: var(--sun); }
+.week7 { display: flex; gap: 6px; }
+.week7 i { flex: 1; height: 28px; border: 2px solid var(--ink); border-radius: 9px; background: var(--paper); display: grid; place-items: center; font-style: normal; font-size: .8rem; font-weight: 800; }
+.week7 i.on { background: var(--leaf); }
+.dadi-bar { background: var(--sun); border: 2px dashed var(--ink); border-radius: 16px; padding: 10px 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.dadi-bar p { margin: 0; flex: 1 1 180px; font-weight: 700; }
+#dadi-text { min-height: 150px; }
+@media (min-width: 900px) { .score b { font-size: 2.2rem; } }
+.ptotal { border: 2.5px solid var(--ink); border-radius: 18px; background: var(--sun); box-shadow: var(--sh-s); padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; justify-content: space-between; }
+.ptotal b { font-family: var(--font-display); font-size: 1.9rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.ptotal small { font-weight: 800; }
+.pprice { cursor: pointer; background: var(--leaf-soft); font-variant-numeric: tabular-nums; }
+.drop { border: 2.5px dashed var(--ink); border-radius: 18px; padding: 16px; text-align: center; background: var(--paper-2); display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; transition: background .2s, transform .2s; }
+.drop small { color: var(--muted); font-weight: 700; }
+.drop.over, #start.over .drop { background: var(--sun); transform: scale(1.02); }
+#start.over { outline: 3px dashed var(--ink); outline-offset: 4px; }
+.thumbs { display: flex; gap: 8px; margin-bottom: 10px; }
+.thumbs:empty { display: none; }
+.thumbs img { width: 64px; height: 64px; object-fit: cover; border: 2.5px solid var(--ink); border-radius: 14px; }
+@media (hover: none) { .drop { display: none; } }
 </style>
 </head>
 <body>
 
 <header class="topbar">
   <div class="topbar-in">
-    <a class="brand" href="#recipes" aria-label="Food For Us, home">
+    <a class="brand" href="#today" aria-label="Food For Us, home">
       <span class="logo" aria-hidden="true">
         <svg viewBox="0 0 48 48" fill="none" stroke="#2a1f17" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 22h32c0 10-7 17-16 17S8 32 8 22z" fill="#ffc93c"/><path d="M17 15c-3-3 3-5 0-9M24 15c-3-3 3-5 0-9M31 15c-3-3 3-5 0-9"/></svg>
       </span>
@@ -489,13 +593,29 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
     </a>
     <nav class="tabs" id="tabs" aria-label="Main">
       <i class="ind"></i>
+      <a class="tab" href="#today" data-view="today">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/></svg>
+        Today
+      </a>
       <a class="tab" href="#recipes" data-view="recipes">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M9 8h6M9 12h6"/></svg>
-        My Recipes
+        Recipes
       </a>
       <a class="tab" href="#cook" data-view="cook">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
         Cook with AI
+      </a>
+      <a class="tab" href="#plan" data-view="plan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+        Week
+      </a>
+      <a class="tab" href="#shop" data-view="shop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h3l2.5 11h9L20 8H7"/><circle cx="10" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></svg>
+        Shopping
+      </a>
+      <a class="tab" href="#pantry" data-view="pantry">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M5 10h14M9 6v2M9 13v3"/></svg>
+        Pantry
       </a>
     </nav>
     <div class="tools">
@@ -587,6 +707,8 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
             <button type="button" class="btn" id="add-btn">Add</button>
           </div>
           <div>
+            <div class="drop" id="drop"><b>Drop photos here</b><small>or tap a button below</small></div>
+            <div class="thumbs" id="thumbs"></div>
             <div class="photo-row">
               <label class="btn ghost photo-label" for="photo-cam">&#128248; Take a photo
                 <input type="file" id="photo-cam" accept="image/*" capture="environment">
@@ -599,6 +721,7 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
           </div>
           <p class="label">Your list</p>
           <div class="mine" id="mine" aria-live="polite"></div>
+          <div><button type="button" class="btn ghost small" id="from-pantry">&#129379; Add everything from my Pantry</button></div>
           <p class="label">Tap to add common items</p>
           <div class="chips" id="quick" role="group" aria-label="Common ingredients"></div>
         </section>
@@ -637,24 +760,152 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
 
     <div id="results" aria-live="polite"></div>
   </div>
+
+  <!-- ============ TODAY ============ -->
+  <div class="view" id="view-today">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow" id="t-greet">Hello</p>
+        <h1 id="t-title">What shall we cook today?</h1>
+        <p class="lead">Decide what to cook, plan the week, shop once and use up food before it spoils. Your whole kitchen, sorted.</p>
+        <div class="row">
+          <button type="button" class="btn sun" id="t-surprise">&#127922; Surprise me!</button>
+          <a class="btn ghost" href="#plan">Plan my week</a>
+        </div>
+      </div>
+      <div class="hero-art" id="t-art" aria-hidden="true"></div>
+    </section>
+    <div class="tiles" id="t-tiles"></div>
+    <div class="cols">
+      <div class="col">
+        <section class="card" id="t-plan" aria-labelledby="h-tplan"></section>
+        <section class="card" id="t-impact" aria-labelledby="h-timp"></section>
+        <section class="card" id="t-starter" hidden>
+          <div class="card-head"><h2>New here? Start with ready recipes</h2></div>
+          <p class="hint">Add 10 tried and tested Indian home recipes (poha, dal tadka, khichdi and more) in one tap. They work offline and you can edit them.</p>
+          <button type="button" class="btn" id="t-addstart">Add 10 starter recipes</button>
+        </section>
+      </div>
+      <div class="col">
+        <section class="card" id="t-exp" aria-labelledby="h-texp"></section>
+        <section class="card deskonly" id="t-tips">
+          <div class="card-head"><h2>Quick keys</h2></div>
+          <p class="hint"><span class="kbd">1</span> to <span class="kbd">6</span> switch pages &nbsp; <span class="kbd">S</span> surprise me &nbsp; <span class="kbd">/</span> search recipes</p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ WEEK PLAN ============ -->
+  <div class="view" id="view-plan" hidden>
+    <div class="page-head">
+      <div>
+        <h1>Week plan</h1>
+        <p>Decide once for the whole week. No more "what should we cook?" every evening.</p>
+      </div>
+      <div class="row" style="flex:0 0 auto">
+        <button type="button" class="btn" id="plan-auto">&#10024; Auto-plan my week</button>
+        <button type="button" class="btn ghost" id="plan-list">Make shopping list</button>
+      </div>
+    </div>
+    <p class="note" id="plan-empty" hidden>Add a few recipes first (or the 10 starter recipes), then the planner can fill your week. <a href="#recipes">Go to My Recipes</a></p>
+    <div class="grid days" id="plan-days"></div>
+    <div class="row"><button type="button" class="btn ghost small" id="plan-clear">Clear the week</button></div>
+  </div>
+
+  <!-- ============ SHOPPING ============ -->
+  <div class="view" id="view-shop" hidden>
+    <div class="page-head">
+      <div>
+        <h1>Shopping list</h1>
+        <p id="shop-count">Everything you need to buy, in one place.</p>
+      </div>
+      <div class="row" style="flex:0 0 auto">
+        <button type="button" class="btn" id="shop-fromplan">Add from week plan</button>
+        <button type="button" class="btn ghost" id="shop-share">Share on WhatsApp</button>
+      </div>
+    </div>
+    <section class="card">
+      <div class="addrow">
+        <input type="text" id="shop-input" placeholder="Add an item, e.g. 1 kg onion" autocomplete="off" enterkeyhint="done" aria-label="Add a shopping item" list="dl-items">
+        <button type="button" class="btn" id="shop-add">Add</button>
+      </div>
+      <div class="stack" id="shop-list" aria-live="polite"></div>
+      <div class="ptotal" id="shop-total" hidden></div>
+      <div class="row">
+        <button type="button" class="btn small" id="shop-price">&#128176; Estimate prices with AI</button>
+        <button type="button" class="btn ghost small" id="shop-bought">Bought: move ticked to Pantry</button>
+        <button type="button" class="btn ghost small" id="shop-clear">Clear ticked</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ PANTRY ============ -->
+  <div class="view" id="view-pantry" hidden>
+    <div class="page-head">
+      <div>
+        <h1>Pantry and fridge</h1>
+        <p id="pantry-count">Note what you have and when it expires. We will tell you what to cook first.</p>
+      </div>
+      <button type="button" class="btn" id="pantry-cook">&#127859; Cook with these</button>
+    </div>
+    <section class="card">
+      <div class="addrow">
+        <input type="text" id="pantry-input" placeholder="What did you buy? e.g. Spinach" autocomplete="off" enterkeyhint="done" aria-label="Item name" list="dl-items">
+        <input type="date" id="pantry-date" aria-label="Expiry date (optional)">
+        <button type="button" class="btn" id="pantry-add">Add</button>
+      </div>
+      <div class="chips" id="pantry-chips" role="group" aria-label="Quick expiry"></div>
+      <div class="stack" id="pantry-list" aria-live="polite"></div>
+    </section>
+  </div>
 </div>
 
 <footer>Dish ideas come from the AI (your list is sent to it). Ideas and nutrition numbers are only a guide. Please check that ingredients are fresh and safe, and check for allergies. Recipes you type in My Recipes never leave this device.<span class="made">Made by Puranjay Abrol</span></footer>
 
 <nav class="tabbar" id="tabbar" aria-label="Main">
   <i class="ind"></i>
+  <a href="#today" data-view="today">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/></svg>
+    Today
+  </a>
   <a href="#recipes" data-view="recipes">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M9 8h6M9 12h6"/></svg>
     Recipes
   </a>
   <a href="#cook" data-view="cook">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
-    Cook with AI
+    Cook AI
   </a>
-  <button type="button" id="guide-btn-2" hidden>Guide</button>
+  <a href="#plan" data-view="plan">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+    Week
+  </a>
+  <a href="#shop" data-view="shop">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h3l2.5 11h9L20 8H7"/><circle cx="10" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></svg>
+    Shop
+  </a>
+  <a href="#pantry" data-view="pantry">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M5 10h14M9 6v2M9 13v3"/></svg>
+    Pantry
+  </a>
 </nav>
 
 <div id="toast" role="status" aria-live="polite"></div>
+
+<datalist id="dl-items"></datalist>
+
+<!-- Surprise me -->
+<dialog id="surprise" class="sheetd" aria-labelledby="sp-title">
+  <div class="sheet">
+    <div class="sheet-head">
+      <h2 id="sp-title">Aaj kya banega?</h2>
+      <button type="button" class="iconbtn" id="sp-close" aria-label="Close">Close</button>
+    </div>
+    <div class="spin" id="sp-box" aria-live="polite"></div>
+    <div class="sheet-actions" id="sp-actions"></div>
+  </div>
+</dialog>
 
 <!-- Settings -->
 <dialog id="settings" class="sheetd" aria-labelledby="set-title">
@@ -665,7 +916,7 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
     </div>
     <button type="button" class="setrow" id="size-btn" role="switch" aria-checked="false"><span><b>Bigger text</b><small>Easier to read</small></span><i class="sw"></i></button>
     <button type="button" class="setrow" id="snd-btn" role="switch" aria-checked="true"><span><b>Sounds</b><small>Soft clicks and chimes</small></span><i class="sw"></i></button>
-    <button type="button" class="setrow" id="ai-open2"><span><b>AI connection</b><small id="ai-status2">Not connected</small></span><span aria-hidden="true">&rsaquo;</span></button>
+    <button type="button" class="setrow" id="ai-open2"><span><b>AI connection</b><small id="ai-status2">Host API (developer's key)</small></span><span aria-hidden="true">&rsaquo;</span></button>
     <button type="button" class="setrow" id="guide-btn"><span><b>Guide</b><small>Replay the quick tour</small></span><span aria-hidden="true">&rsaquo;</span></button>
   </div>
 </dialog>
@@ -688,6 +939,7 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
       <h2 id="ed-title">Add a recipe</h2>
       <button type="button" class="iconbtn" id="ed-close" aria-label="Close">Close</button>
     </div>
+    <div class="dadi-bar"><p>&#127897;&#65039; Dadi mode: just <b>speak</b> or paste the recipe the way she tells it. We write it down neatly.</p><button type="button" class="btn small" id="dadi-open">Tell the recipe</button></div>
     <div class="field">
       <label for="ed-name">Recipe name</label>
       <input type="text" id="ed-name" maxlength="80" placeholder="For example: Mummy's aloo jeera" autocomplete="off">
@@ -739,6 +991,17 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
   </form>
 </dialog>
 
+
+<dialog id="dadi" class="sheetd" aria-labelledby="dadi-title">
+  <div class="sheet">
+    <div class="sheet-head"><h2 id="dadi-title">Dadi mode</h2><button type="button" class="iconbtn" id="dadi-close">Close</button></div>
+    <p class="hint">Press the mic and tell the recipe in Hindi, Hinglish or English, like you would to a grandchild. Or paste a WhatsApp message. The AI turns it into ingredients and steps and keeps her little tips in Notes.</p>
+    <div class="field"><label for="dadi-text">What she says</label><textarea id="dadi-text" placeholder="Pehle aloo ubaal lo, phir kadhai mein jeera daalo..."></textarea></div>
+    <p class="kd-msg" id="dadi-msg" role="alert"></p>
+    <div class="sheet-actions"><button type="button" class="btn" id="dadi-go">Write it down</button></div>
+  </div>
+</dialog>
+
 <!-- Step by step cooking -->
 <dialog id="cook" aria-labelledby="ck-title">
   <div class="ck">
@@ -755,6 +1018,10 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
       <ul id="ck-ing"></ul>
     </details>
     <div class="ck-body"><p class="ck-step" id="ck-step" aria-live="polite"></p></div>
+    <div class="ck-tools">
+      <button type="button" class="btn" id="ck-read" aria-pressed="false" hidden>&#128266; Read aloud</button>
+      <button type="button" class="btn" id="ck-timer" hidden></button>
+    </div>
     <div class="ck-nav">
       <button type="button" class="btn ghost" id="ck-back">Back</button>
       <button type="button" class="btn sun" id="ck-next">Next step</button>
@@ -905,9 +1172,12 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
     ind.style.transform = "translateX(" + cur.offsetLeft + "px)";
   }
   function moveAll() { moveInd($("tabs")); moveInd($("tabbar")); }
+  var VIEWS = ["today", "recipes", "cook", "plan", "shop", "pantry"];
+  var TITLES = { today: "Today", recipes: "My Recipes", cook: "Cook with AI", plan: "Week plan", shop: "Shopping list", pantry: "Pantry" };
   function route() {
-    var v = location.hash === "#cook" ? "cook" : "recipes";
-    ["cook", "recipes"].forEach(function (n) {
+    var hv = location.hash.replace("#", "");
+    var v = hv === "start" ? "cook" : (VIEWS.indexOf(hv) >= 0 ? hv : "today");
+    VIEWS.forEach(function (n) {
       var el = $("view-" + n);
       var show = n === v;
       if (show && el.hidden) { el.hidden = false; el.classList.remove("enter"); void el.offsetWidth; el.classList.add("enter"); }
@@ -917,10 +1187,14 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
       if (a.dataset.view === v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
     if (v === "recipes") renderRecipes();
-    document.title = v === "recipes" ? "My Recipes | Food For Us" : "Cook with AI | Food For Us";
+    else if (v === "today") renderToday();
+    else if (v === "plan") renderPlan();
+    else if (v === "shop") renderShop();
+    else if (v === "pantry") renderPantry();
+    document.title = TITLES[v] + " | Food For Us";
     moveAll();
   }
-  window.addEventListener("hashchange", function () { route(); if (location.hash !== "#start") window.scrollTo(0, 0); });
+  window.addEventListener("hashchange", function () { route(); if (location.hash === "#start") { var st = $("start"); if (st) st.scrollIntoView({ block: "start" }); } else window.scrollTo(0, 0); });
   window.addEventListener("resize", moveAll);
   (function () {
     function typing(el) { return el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) && el.type !== "checkbox" && el.type !== "file"; }
@@ -1235,10 +1509,10 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
     if (!aiReady()) { e.preventDefault(); openAI("Please connect an AI to read photos."); return; }
     if (!cur().vision) { e.preventDefault(); toast(cur().name + " cannot read photos. Pick another AI, or type your list."); }
   }
-  async function photoChange() {
-    var input = this;
-    var files = Array.prototype.slice.call(input.files || [], 0, 4);
+  async function photoChange() { var input = this; await readPhotos(Array.prototype.slice.call(input.files || [], 0, 4)); input.value = ""; }
+  async function readPhotos(files) {
     if (!files.length) return;
+    showThumbs(files);
     var st = $("photo-status");
     st.textContent = "Looking at your photo. This can take a few seconds...";
     try {
@@ -1255,7 +1529,6 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
       st.textContent = info.text;
       if (info.keyProblem) openAI(info.text);
     }
-    input.value = "";
   }
   ["photo-input", "photo-cam"].forEach(function (id) { var el = $(id); el.addEventListener("click", photoGuard); el.onchange = photoChange; });
 
@@ -1434,7 +1707,17 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
     }
 
     var recipe = h("div", { class: "recipe", id: "recipe-" + id, hidden: "" });
-    recipe.appendChild(h("div", null, h("h4", { text: "Ingredients" }), list("ul", ingredients)));
+    var people = Number(d.serves) > 0 ? Number(d.serves) : 0, ingUl = list("ul", ingredients);
+    function scaled() { return people && mine ? Object.assign({}, d, { serves: people, ingredients: ingredients.map(function (x) { return scaleLine(x, people / Number(d.serves)); }) }) : d; }
+    function paintIng() { ingUl.textContent = ""; scaled().ingredients.forEach(function (x) { ingUl.appendChild(h("li", { text: String(x) })); }); }
+    if (mine && people) {
+      var cnt = h("b", { text: String(people), "aria-live": "polite" });
+      var minus = h("button", { type: "button", "aria-label": "Fewer people", text: "\u2212" }), plus = h("button", { type: "button", "aria-label": "More people", text: "+" });
+      minus.onclick = function () { if (people > 1) { people -= 1; cnt.textContent = String(people); paintIng(); } };
+      plus.onclick = function () { if (people < 50) { people += 1; cnt.textContent = String(people); paintIng(); } };
+      recipe.appendChild(h("div", { class: "scaler" }, h("span", { class: "label", text: "Cooking for" }), minus, cnt, plus, h("span", { class: "hint", text: "people. Amounts change." })));
+    }
+    recipe.appendChild(h("div", null, h("h4", { text: "Ingredients" }), ingUl));
     if (missing.length) {
       var ul = h("ul");
       missing.forEach(function (mm) { ul.appendChild(h("li", null, h("b", { text: String(mm.item) }), mm.instead ? " → " + String(mm.instead) : "")); });
@@ -1453,19 +1736,22 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
       seeBtn.textContent = open ? "Hide recipe" : "See recipe";
     };
     var cookBtn = h("button", { type: "button", class: "btn", text: "Start cooking" });
-    cookBtn.onclick = function () { openCook(d); };
+    cookBtn.onclick = function () { openCook(scaled()); };
     var actions = h("div", { class: "dish-actions" }, seeBtn, cookBtn);
     if (mine) {
-      var eb = h("button", { type: "button", class: "btn ghost wide", text: "Edit this recipe" });
+      var eb = h("button", { type: "button", class: "btn ghost", text: "Edit recipe" });
       eb.onclick = function () { openEditor(d); };
       actions.appendChild(eb);
     } else {
       var done = !!state.saved[norm(d.name)];
-      var sb = h("button", { type: "button", class: "btn ghost wide", text: done ? "Saved to My Recipes" : "Save to My Recipes" });
+      var sb = h("button", { type: "button", class: "btn ghost", text: done ? "Saved" : "Save recipe" });
       if (done) sb.disabled = true;
-      sb.onclick = function () { if (saveFromAI(d)) { sb.textContent = "Saved to My Recipes"; sb.disabled = true; } };
+      sb.onclick = function () { if (saveFromAI(d)) { sb.textContent = "Saved"; sb.disabled = true; } };
       actions.appendChild(sb);
     }
+    var shareBtn = h("button", { type: "button", class: "btn ghost wide", text: "Share on WhatsApp" });
+    shareBtn.onclick = function () { shareRecipe(scaled()); };
+    actions.appendChild(shareBtn);
     var minutes = Number(d.minutes) > 0 ? num(d.minutes) : "-";
     return h("article", { class: "dish rise" },
       h("div", { class: "dish-top" },
@@ -1676,14 +1962,96 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
     $("backup-up").value = "";
   };
 
+  /* ---------- share a recipe (WhatsApp / native share) ---------- */
+  function recipeText(d) {
+    var out = ["*" + d.name + "*" + (Number(d.minutes) > 0 ? " (" + num(d.minutes) + " min)" : "")];
+    if (d.about) out.push(String(d.about));
+    var ing = Array.isArray(d.ingredients) ? d.ingredients : [], st = Array.isArray(d.steps) ? d.steps : [];
+    if (ing.length) out.push("", "*Ingredients*", ing.map(function (x) { return "- " + x; }).join("\n"));
+    var miss = (Array.isArray(d.missing) ? d.missing : []).filter(function (m) { return m && m.item; });
+    if (miss.length) out.push("", "*Need to buy / swap*", miss.map(function (m) { return "- " + m.item + (m.instead ? " (or " + m.instead + ")" : ""); }).join("\n"));
+    if (st.length) out.push("", "*Steps*", st.map(function (x, i) { return (i + 1) + ". " + x; }).join("\n"));
+    out.push("", "Made with Food For Us: " + location.origin + location.pathname);
+    return out.join("\n");
+  }
+  function shareRecipe(d) {
+    var text = recipeText(d);
+    if (navigator.share && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
+      navigator.share({ title: d.name, text: text }).catch(function () {});
+    } else {
+      window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank", "noopener");
+    }
+  }
+
   /* ---------- step by step cooking mode ---------- */
   var ck = { steps: [], i: 0 }, wake = null;
   async function requestWake() { try { if (navigator.wakeLock) wake = await navigator.wakeLock.request("screen"); } catch (e) { wake = null; } }
   function releaseWake() { try { if (wake) { wake.release(); wake = null; } } catch (e) {} }
+  /* timers found inside steps, read-aloud (English and Hindi) */
+  var TIME_RE = /(\d+)(?:\s*(?:-|to|\u2013)\s*(\d+))?\s*(minutes?|mins?|min|\u092e\u093f\u0928\u091f)/i;
+  function stepMinutes(s) { var m = String(s).match(TIME_RE); if (!m) return 0; var n = Number(m[2] || m[1]); return n > 0 && n <= 180 ? n : 0; }
+  var speakOn = store("ffu-read") === "1", timer = { end: 0, id: null, ring: null, label: "" };
+  var canSpeak = !!(window.speechSynthesis && window.SpeechSynthesisUtterance);
+  function speak(t) {
+    if (!canSpeak) return;
+    try {
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(t);
+      u.lang = /[\u0900-\u097F]/.test(t) ? "hi-IN" : "en-IN";
+      u.rate = 0.9;
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+  function fmt(sec) { var m = Math.floor(sec / 60), s = sec % 60; return m + ":" + (s < 10 ? "0" : "") + s; }
+  function paintTimer() {
+    var b = $("ck-timer"), m = stepMinutes(ck.steps[ck.i] || "");
+    b.classList.remove("run", "ring");
+    if (timer.ring) { b.hidden = false; b.classList.add("ring"); b.textContent = "\u23F0 Time is up! Tap to stop"; return; }
+    if (timer.id) {
+      b.hidden = false; b.classList.add("run");
+      b.textContent = "\u23F1 " + fmt(Math.max(0, Math.round((timer.end - Date.now()) / 1000))) + " left \u00b7 tap to cancel";
+      return;
+    }
+    b.hidden = !m;
+    if (m) b.textContent = "\u23F1 Start " + m + " min timer";
+  }
+  function stopTimer() { clearInterval(timer.id); timer.id = null; clearInterval(timer.ring); timer.ring = null; }
+  function ringTimer() {
+    clearInterval(timer.id); timer.id = null;
+    var n = 0;
+    function beep() { sfx("ok"); if (navigator.vibrate) navigator.vibrate([200, 100, 200]); n += 1; if (n >= 8) { clearInterval(timer.ring); timer.ring = null; paintTimer(); } }
+    beep(); timer.ring = setInterval(beep, 1500);
+    speak("Time is up. Please check your food.");
+    toast("Timer finished");
+    paintTimer();
+  }
+  $("ck-timer").onclick = function () {
+    if (timer.ring || timer.id) { stopTimer(); paintTimer(); return; }
+    var m = stepMinutes(ck.steps[ck.i] || ""); if (!m) return;
+    timer.end = Date.now() + m * 60000;
+    timer.id = setInterval(function () { if (Date.now() >= timer.end) ringTimer(); else paintTimer(); }, 500);
+    armed = true; sfx("ok"); paintTimer();
+  };
+  $("ck-read").hidden = !canSpeak;
+  function paintRead() { $("ck-read").setAttribute("aria-pressed", String(speakOn)); $("ck-read").textContent = speakOn ? "\u{1F50A} Reading aloud: on" : "\u{1F507} Read aloud"; }
+  paintRead();
+  $("ck-read").onclick = function () {
+    speakOn = !speakOn; store("ffu-read", speakOn ? "1" : "0"); paintRead();
+    if (speakOn) speak(ck.steps[ck.i]); else if (canSpeak) speechSynthesis.cancel();
+  };
   function renderCook(dir) {
     var n = ck.steps.length;
     $("ck-count").textContent = "Step " + (ck.i + 1) + " of " + n;
-    $("ck-step").textContent = ck.steps[ck.i];
+    var stepEl = $("ck-step"), txt = ck.steps[ck.i], mm = txt.match(TIME_RE);
+    stepEl.textContent = "";
+    if (mm) {
+      var at = mm.index;
+      stepEl.appendChild(document.createTextNode(txt.slice(0, at)));
+      stepEl.appendChild(h("mark", { text: mm[0] }));
+      stepEl.appendChild(document.createTextNode(txt.slice(at + mm[0].length)));
+    } else stepEl.textContent = txt;
+    paintTimer();
+    if (speakOn) speak(txt);
     restart($("ck-step"), dir < 0 ? "swap-back" : "swap-in");
     $("ck-fill").style.width = ((ck.i + 1) / n * 100) + "%";
     $("ck-back").disabled = ck.i === 0;
@@ -1692,6 +2060,7 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
   function openCook(d) {
     var steps = (Array.isArray(d.steps) ? d.steps : []).map(String).filter(Boolean);
     if (!steps.length) { toast("This recipe has no steps yet."); return; }
+    stopTimer();
     ck = { steps: steps, i: 0 };
     $("ck-title").textContent = d.name;
     var ul = $("ck-ing");
@@ -1704,7 +2073,7 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
   $("ck-next").onclick = function () { if (ck.i >= ck.steps.length - 1) closeDlg($("cook")); else { ck.i += 1; renderCook(1); } };
   $("ck-back").onclick = function () { if (ck.i > 0) { ck.i -= 1; renderCook(-1); } };
   $("ck-close").onclick = function () { closeDlg($("cook")); };
-  $("cook").addEventListener("close", releaseWake);
+  $("cook").addEventListener("close", function () { releaseWake(); stopTimer(); if (canSpeak) speechSynthesis.cancel(); });
   $("cook").addEventListener("keydown", function (e) {
     if (e.key === "ArrowRight") $("ck-next").click();
     else if (e.key === "ArrowLeft") $("ck-back").click();
@@ -1723,6 +2092,7 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
   var ART = {
     bowl: '<div>' + POT + '</div>',
     save: '<div class="mock"><span class="tag">New recipe</span><div><span class="typed">Mummy\'s aloo jeera</span></div><div class="ln" style="width:90%"></div><div class="ln" style="width:70%"></div><div class="ln" style="width:80%"></div><div class="ln" style="width:55%"></div></div>',
+    plan: '<div class="mock"><span class="tag">This week</span><div class="row2">Mon &middot; Dal tadka</div><div class="row2 hi">Tue &middot; Poha</div><div class="row2">Wed &middot; Khichdi</div><div class="row2">&#128722; 12 things to buy</div></div>',
     find: '<div class="mock"><div class="row2">&#128269; <span>jeera</span></div><div class="row2 hi">Aloo jeera <span style="margin-left:auto">20 min</span></div><div class="row2">Jeera rice <span style="margin-left:auto">25 min</span></div><div class="row2">Jeera paratha <span style="margin-left:auto">30 min</span></div></div>',
     cook: '<div class="mock"><span class="tag">Step 3 of 5</span><div class="pbar"><span></span></div><p class="bigstep">Add the cumin seeds and wait until they sizzle.</p></div>',
     backup: '<div class="mock" style="align-items:center;text-align:center"><svg viewBox="0 0 64 64" width="84" fill="#ffc93c" stroke="#2a1f17" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="animation:bob 3.5s ease-in-out infinite"><path d="M16 6h22l12 12v40H16z"/><path d="M38 6v12h12M32 28v18M24 38l8 8 8-8" fill="none"/></svg><b style="font-family:var(--font-display);font-size:1.2rem">food-for-us-recipes.json</b></div>',
@@ -1734,6 +2104,7 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
     { part: "Part 1 · No AI needed", t: "Save your own recipes", p: "Go to My Recipes and tap Add a recipe. Type the name, then the ingredients one on each line, then the steps one on each line. Everything stays on this device and works without internet.", art: "save", act: "sample" },
     { part: "Part 1 · No AI needed", t: "Find any recipe in a second", p: "Search by name or by an ingredient. Use the filters for vegetarian or quick dishes. \"I can make now\" checks your recipes against the ingredients you list on the Cook with AI page.", art: "find" },
     { part: "Part 1 · No AI needed", t: "Cook one step at a time", p: "Open any recipe and tap Start cooking. You see one big step at a time, and the screen stays awake while your hands are busy.", art: "cook", act: "try" },
+    { part: "Part 1 · No AI needed", t: "Plan, shop, waste less", p: "Tap Surprise me when you cannot decide what to cook. Plan the whole week in one tap, turn the plan into a shopping list, and note expiry dates in Pantry so food gets used before it spoils.", art: "plan" },
     { part: "Part 1 · No AI needed", t: "Keep your recipes safe", p: "Recipes live in this browser. Tap Download backup now and then. Restore that file on another phone or computer to bring everything along.", art: "backup" },
     { part: "Part 2 · AI", ai: true, t: "Cook from what you have", p: "On the Cook with AI page, list what is in your kitchen or add a photo. Choose your time. The AI suggests dishes with full recipes and swaps for anything missing. You can save any dish to My Recipes.", art: "ai" },
     { part: "Part 2 · AI", ai: true, t: "The AI is already on", p: "Host API is selected, so nothing to set up. It uses the developer's own key, so if it ever runs out, just add your own key here or later from the top bar.", art: "keys", form: true }
@@ -1783,7 +2154,7 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
   function finishTour(goAI) {
     store(TOURK, "1");
     closeDlg($("tour"));
-    var target = goAI === true || (aiReady() && tour.i === TOUR.length - 1) ? "#cook" : "#recipes";
+    var target = goAI === true || (aiReady() && tour.i === TOUR.length - 1) ? "#cook" : "#today";
     if (location.hash === target) route(); else location.hash = target;
   }
   $("t-next").onclick = function () { if (tour.i >= TOUR.length - 1) finishTour(false); else { tour.i += 1; tour.dir = 1; renderTour(); } };
@@ -1831,6 +2202,598 @@ footer .made { display: block; margin-top: 14px; color: var(--ink); font-family:
     sfx(kind);
     if (navigator.vibrate) navigator.vibrate(kind === "soft" ? 4 : 6);
   });
+
+  /* =====================================================================
+     KITCHEN SUITE: today, surprise me, week plan, shopping list, pantry,
+     starter recipes and a serving scaler. Everything works without AI.
+     ===================================================================== */
+  function S(id, name, min, serves, type, veg, ing, steps, notes) {
+    return { id: "st-" + id, name: name, minutes: min, serves: serves, type: type, veg: veg, ingredients: ing, steps: steps, notes: notes || "" };
+  }
+  var STARTERS = [
+    S("poha", "Kanda poha", 15, 2, "Breakfast", true,
+      ["2 cups poha (flattened rice)", "1 onion, chopped", "1 small potato, small cubes", "2 tbsp peanuts", "1 tsp mustard seeds", "8 curry leaves", "1/2 tsp turmeric", "1 green chilli, chopped", "Salt to taste", "1 lemon", "Fresh coriander"],
+      ["Wash the poha in a sieve and leave it for 5 minutes to soften.", "Heat 2 tbsp oil. Add peanuts and fry for 1 minute, then take them out.", "Add mustard seeds, curry leaves and green chilli. Let the seeds pop.", "Add onion and potato. Cook for 5 minutes until soft.", "Add turmeric, salt and the poha. Mix gently and cook for 2 minutes.", "Switch off the flame. Add peanuts, lemon juice and coriander."]),
+    S("dal", "Dal tadka", 30, 4, "Main meal", true,
+      ["1 cup toor dal", "3 cups water", "1/2 tsp turmeric", "Salt to taste", "2 tbsp ghee", "1 tsp cumin seeds", "4 garlic cloves, chopped", "1 tomato, chopped", "1 green chilli", "1/2 tsp red chilli powder", "Fresh coriander"],
+      ["Wash the dal. Put it in a cooker with water, turmeric and salt.", "Cook on high flame for 3 whistles, then switch off. Wait until the steam goes.", "Mash the dal lightly. Add a little hot water if it is too thick.", "Heat ghee in a small pan. Add cumin seeds and let them sizzle.", "Add garlic and green chilli. Fry for 1 minute until golden.", "Add tomato and chilli powder. Cook for 3 minutes until soft.", "Pour this tadka over the dal. Mix, top with coriander and serve hot."]),
+    S("jeera-rice", "Jeera rice", 25, 4, "Main meal", true,
+      ["1 cup basmati rice", "2 cups water", "1 tbsp ghee", "1 tsp cumin seeds", "Salt to taste"],
+      ["Wash the rice well and soak it for 15 minutes. Drain.", "Heat ghee in a pot. Add cumin seeds and let them sizzle.", "Add the rice and fry gently for 1 minute.", "Add water and salt. Bring to a boil, then cover and cook on low flame for 10 minutes.", "Switch off. Leave it covered for 5 minutes, then fluff with a fork."]),
+    S("khichdi", "Vegetable khichdi", 30, 3, "Main meal", true,
+      ["1/2 cup rice", "1/2 cup moong dal", "1 carrot, chopped", "1/4 cup peas", "1 tbsp ghee", "1 tsp cumin seeds", "1/2 tsp turmeric", "Salt to taste", "4 cups water"],
+      ["Wash the rice and moong dal together.", "Heat ghee in a cooker. Add cumin seeds and let them sizzle.", "Add carrot, peas, rice, dal, turmeric, salt and water.", "Close the lid and cook for 4 whistles.", "Wait until the steam goes, then mash lightly. Serve with curd or ghee."],
+      "Light and easy on the stomach. Good for children and elders."),
+    S("egg-bhurji", "Egg bhurji", 15, 2, "Breakfast", false,
+      ["4 eggs", "1 onion, chopped", "1 tomato, chopped", "1 green chilli, chopped", "1/4 tsp turmeric", "Salt to taste", "2 tbsp oil", "Fresh coriander"],
+      ["Heat oil in a pan. Add onion and green chilli. Cook for 3 minutes until soft.", "Add tomato, turmeric and salt. Cook for 2 minutes.", "Break the eggs into the pan. Stir slowly for 3 minutes until set.", "Top with coriander. Serve with roti or bread."]),
+    S("paneer-bhurji", "Paneer bhurji", 20, 3, "Main meal", true,
+      ["200 g paneer, crumbled", "1 onion, chopped", "1 tomato, chopped", "1/2 capsicum, chopped", "1 tsp cumin seeds", "1/2 tsp turmeric", "1/2 tsp garam masala", "Salt to taste", "2 tbsp oil", "Fresh coriander"],
+      ["Heat oil. Add cumin seeds and let them sizzle.", "Add onion and capsicum. Cook for 4 minutes.", "Add tomato, turmeric and salt. Cook for 3 minutes until soft.", "Add the paneer and garam masala. Mix and cook for 3 minutes.", "Top with coriander. Serve with roti."]),
+    S("chilla", "Besan chilla", 15, 2, "Breakfast", true,
+      ["1 cup besan (gram flour)", "3/4 cup water", "1 onion, finely chopped", "1 tomato, finely chopped", "1 green chilli, chopped", "1/4 tsp turmeric", "Salt to taste", "Oil for the pan"],
+      ["Mix besan, water, turmeric and salt into a smooth batter. Rest it for 5 minutes.", "Stir in onion, tomato and green chilli.", "Heat and grease a pan. Pour a ladle of batter and spread it round.", "Cook for 2 minutes, drizzle a little oil, flip and cook for 2 minutes more.", "Serve hot with chutney or curd."]),
+    S("upma", "Suji upma", 15, 2, "Breakfast", true,
+      ["1 cup suji (rava)", "2 cups hot water", "1 onion, chopped", "1/4 cup peas", "1 tsp mustard seeds", "8 curry leaves", "1 green chilli", "1 tbsp ghee", "Salt to taste"],
+      ["Dry roast the suji on low flame for 3 minutes until it smells nice. Keep aside.", "Heat ghee. Add mustard seeds, curry leaves and green chilli.", "Add onion and peas. Cook for 3 minutes.", "Pour in hot water and salt. Let it boil.", "Add the suji slowly, stirring all the time. Cover and cook for 2 minutes.", "Mix well and serve hot."]),
+    S("chai", "Masala chai", 10, 2, "Snack", true,
+      ["1 cup water", "1 cup milk", "2 tsp tea leaves", "2 tsp sugar", "1 small piece ginger, crushed", "2 cardamom pods, crushed"],
+      ["Boil water with ginger and cardamom for 2 minutes.", "Add tea leaves and cook for 1 minute.", "Add milk and sugar. Let it rise once, then simmer for 2 minutes.", "Strain into cups and serve hot."]),
+    S("aloo-jeera", "Aloo jeera", 20, 4, "Main meal", true,
+      ["3 medium potatoes, boiled", "1 tsp cumin seeds (jeera)", "2 tbsp oil", "1/2 tsp turmeric", "Salt to taste", "A little fresh coriander"],
+      ["Peel the boiled potatoes and cut them into small pieces.", "Heat the oil in a pan on medium flame.", "Add the cumin seeds and wait until they sizzle.", "Add turmeric, then the potatoes and salt. Mix well.", "Cook for 5 minutes, stirring now and then. Add coriander and serve hot."])
+  ];
+
+  /* ---- dates and storage ---- */
+  function iso(d) { var m = d.getMonth() + 1, dd = d.getDate(); return d.getFullYear() + "-" + (m < 10 ? "0" : "") + m + "-" + (dd < 10 ? "0" : "") + dd; }
+  function today0() { var n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+  function addDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+  function dayDiff(s) { var p = String(s).split("-"); return Math.round((new Date(+p[0], +p[1] - 1, +p[2]) - today0()) / 864e5); }
+  function jget(k, def) { try { var v = JSON.parse(localStorage.getItem(k) || "null"); return v == null ? def : v; } catch (e) { return def; } }
+  function jset(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { toast("Could not save on this device. Please free some space."); return false; } }
+  var PK = "ffu-plan", LK = "ffu-list", FK = "ffu-pantry";
+  var plan = jget(PK, {}), shop = jget(LK, []), pantry = jget(FK, []);
+  if (!plan || typeof plan !== "object" || Array.isArray(plan)) plan = {};
+  if (!Array.isArray(shop)) shop = [];
+  if (!Array.isArray(pantry)) pantry = [];
+  var SLOTS = [["b", "Breakfast"], ["l", "Lunch"], ["d", "Dinner"]];
+  function curSlot() { var hr = new Date().getHours(); return hr < 11 ? "b" : hr < 16 ? "l" : "d"; }
+  function slotName(k) { for (var i = 0; i < SLOTS.length; i++) if (SLOTS[i][0] === k) return SLOTS[i][1]; return ""; }
+  function recById(id) { for (var i = 0; i < recipes.length; i++) if (recipes[i].id === id) return recipes[i]; return null; }
+  function uidv() { return "i" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function ensureSaved(r) {
+    var have = recById(r.id);
+    if (have) return have;
+    var rec = cleanRecipe(r);
+    if (!rec) return null;
+    recipes.unshift(rec);
+    if (!saveRecipes()) { recipes.shift(); return null; }
+    return rec;
+  }
+  function addAllStarters() {
+    var n = 0;
+    STARTERS.forEach(function (r) { if (!recById(r.id) && !recipes.some(function (x) { return norm(x.name) === norm(r.name); })) { var c = cleanRecipe(r); if (c) { recipes.push(c); n += 1; } } });
+    saveRecipes();
+    toast(n ? "Added " + n + " starter recipes" : "You already have them all");
+    route();
+  }
+  function goto(v) { if (location.hash === "#" + v) route(); else location.hash = "#" + v; }
+
+  /* ---- serving scaler ---- */
+  var QRE = /^\s*(\d+\s+\d\/\d|\d+\/\d+|\d+(?:\.\d+)?[½¼¾⅓⅔]?|[½¼¾⅓⅔])(?:\s*(?:-|–|to)\s*(\d+\s+\d\/\d|\d+\/\d+|\d+(?:\.\d+)?[½¼¾⅓⅔]?|[½¼¾⅓⅔]))?/;
+  function toNum(s) {
+    s = String(s).trim();
+    var u = { "½": 0.5, "¼": 0.25, "¾": 0.75, "⅓": 1 / 3, "⅔": 2 / 3 }, last = s.slice(-1);
+    if (u[last] !== undefined) { var base = s.slice(0, -1).trim(); return (base ? parseFloat(base) : 0) + u[last]; }
+    var m = s.match(/^(\d+)\s+(\d+)\/(\d+)$/); if (m) return +m[1] + (+m[2]) / (+m[3]);
+    m = s.match(/^(\d+)\/(\d+)$/); if (m) return (+m[1]) / (+m[2]);
+    return parseFloat(s);
+  }
+  function fmtQ(n) {
+    if (n >= 10) return String(Math.round(n));
+    var q = Math.round(n * 4) / 4; if (q <= 0) q = 0.25;
+    var w = Math.floor(q), f = q - w, fr = f === 0 ? "" : f === 0.25 ? "¼" : f === 0.5 ? "½" : "¾";
+    return (w ? String(w) : "") + fr;
+  }
+  function scaleLine(line, f) {
+    line = String(line);
+    if (f === 1) return line;
+    var m = line.match(QRE);
+    if (!m) return line;
+    var a = toNum(m[1]); if (!isFinite(a)) return line;
+    var out = fmtQ(a * f);
+    if (m[2]) { var b = toNum(m[2]); if (!isFinite(b)) return line; out += "-" + fmtQ(b * f); }
+    return out + line.slice(m[0].length);
+  }
+
+  /* ---- Surprise me ---- */
+  var spin = { last: null, timer: null };
+  function spinPool() {
+    var hr = new Date().getHours();
+    var want = hr < 11 ? ["Breakfast"] : hr < 16 || hr >= 19 ? ["Main meal"] : ["Snack", "Breakfast"];
+    var all = recipes.slice();
+    STARTERS.forEach(function (r) { if (!recipes.some(function (x) { return x.id === r.id || norm(x.name) === norm(r.name); })) all.push(r); });
+    var f = all.filter(function (r) { return want.indexOf(r.type) >= 0; });
+    return f.length > 1 ? f : all;
+  }
+  function openSurprise() {
+    openDlg($("surprise"));
+    rollSurprise();
+  }
+  function rollSurprise() {
+    var pool = spinPool(), box = $("sp-box"), act = $("sp-actions");
+    clearTimeout(spin.timer);
+    act.textContent = "";
+    var pick = pool[Math.floor(Math.random() * pool.length)];
+    if (pool.length > 1) while (pick.id === spin.last) pick = pool[Math.floor(Math.random() * pool.length)];
+    spin.last = pick.id;
+    var reel = h("p", { class: "reel rolling", text: "..." });
+    box.textContent = "";
+    box.appendChild(reel);
+    var n = 0, total = 14;
+    (function tick() {
+      if (n >= total) { reveal(pick); return; }
+      reel.textContent = pool[Math.floor(Math.random() * pool.length)].name;
+      sfx("soft");
+      n += 1;
+      spin.timer = setTimeout(tick, 60 + n * n * 1.6);
+    })();
+  }
+  function reveal(r) {
+    var box = $("sp-box"), act = $("sp-actions");
+    box.textContent = "";
+    var pills = h("div", { class: "pills" }, h("span", { class: "pill", text: r.type }), h("span", { class: "pill ok", text: r.minutes + " min" }), h("span", { class: "pill", text: "Serves " + r.serves }));
+    box.appendChild(h("div", { class: "mins", style: "animation:pop .5s var(--ease) both" }, h("b", { text: String(r.minutes) }), h("span", { text: "min" })));
+    box.appendChild(h("p", { class: "reel", style: "animation:pop .5s var(--ease) both", text: r.name }));
+    box.appendChild(h("p", { class: "hint", text: (r.veg ? "Vegetarian. " : "") + (r.ingredients.length + " ingredients, " + r.steps.length + " easy steps") }));
+    box.appendChild(pills);
+    sfx("ok");
+    var cookB = h("button", { type: "button", class: "btn", text: "Cook it now" });
+    cookB.onclick = function () { closeDlg($("surprise")); openCook(r); };
+    var planB = h("button", { type: "button", class: "btn sun", text: "Plan it for " + slotName(curSlot()).toLowerCase() });
+    planB.onclick = function () {
+      var rec = ensureSaved(r); if (!rec) return;
+      var k = iso(today0()); plan[k] = plan[k] || {}; plan[k][curSlot()] = rec.id; jset(PK, plan);
+      toast("Added to today's " + slotName(curSlot()).toLowerCase());
+      closeDlg($("surprise")); route();
+    };
+    var again = h("button", { type: "button", class: "btn ghost", text: "🎲 Another one" });
+    again.onclick = rollSurprise;
+    act.appendChild(cookB); act.appendChild(planB); act.appendChild(again);
+  }
+  $("sp-close").onclick = function () { closeDlg($("surprise")); };
+  $("surprise").addEventListener("close", function () { clearTimeout(spin.timer); });
+  $("surprise").addEventListener("click", function (e) { if (e.target === $("surprise")) closeDlg($("surprise")); });
+  $("t-surprise").onclick = openSurprise;
+
+  /* ---- Pantry ---- */
+  function expiring(days) { return pantry.filter(function (p) { return p.exp && dayDiff(p.exp) <= days; }).sort(function (a, b) { return a.exp < b.exp ? -1 : 1; }); }
+  function pBadge(p) {
+    if (!p.exp) return null;
+    var d = dayDiff(p.exp);
+    if (d < 0) return ["bad", "Expired " + (-d) + (d === -1 ? " day ago" : " days ago")];
+    if (d === 0) return ["bad", "Use today!"];
+    if (d <= 3) return ["warn", d + (d === 1 ? " day left" : " days left")];
+    return ["ok", d + " days left"];
+  }
+  function savePantry() { return jset(FK, pantry); }
+  function addPantry(name, exp) {
+    name = pretty(String(name).trim().slice(0, 60));
+    if (!name) return false;
+    pantry.push({ id: uidv(), name: name, exp: exp || "" });
+    return savePantry();
+  }
+  function cookWith(list) {
+    var names = list.map(function (p) { return p.name; }).slice(0, 15);
+    if (!names.length) { toast("Add items to your pantry first"); return; }
+    state.items = [];
+    addItems(names);
+    goto("cook");
+    toast("Added " + names.length + " items. Tap \"What can I cook?\"");
+  }
+  function renderPantry() {
+    var box = $("pantry-list"); box.textContent = "";
+    var rows = pantry.slice().sort(function (a, b) { if (!a.exp && !b.exp) return 0; if (!a.exp) return 1; if (!b.exp) return -1; return a.exp < b.exp ? -1 : 1; });
+    var soon = expiring(3).length;
+    $("pantry-count").textContent = rows.length
+      ? rows.length + (rows.length === 1 ? " item" : " items") + (soon ? ", " + soon + " to use up soon" : ", nothing expiring soon")
+      : "Note what you have and when it expires. We will tell you what to cook first.";
+    if (!rows.length) box.appendChild(h("p", { class: "hint", text: "Nothing here yet. Add what is in your fridge or kitchen above. Dates are optional." }));
+    rows.forEach(function (p) {
+      var b = pBadge(p), used = h("button", { type: "button", class: "used", text: "Used up", "aria-label": "Mark " + p.name + " as used up" });
+      used.onclick = function () { pantry = pantry.filter(function (x) { return x.id !== p.id; }); savePantry(); renderPantry(); };
+      box.appendChild(h("div", { class: "lrow" }, h("div", { class: "tx" }, p.name), b ? h("span", { class: "pill " + b[0], text: b[1] }) : null, used));
+    });
+  }
+  (function () {
+    [["Tomorrow", 1], ["3 days", 3], ["1 week", 7], ["2 weeks", 14], ["1 month", 30]].forEach(function (c) {
+      var b = h("button", { type: "button", class: "chip", text: c[0] });
+      b.onclick = function () { $("pantry-date").value = iso(addDays(today0(), c[1])); };
+      $("pantry-chips").appendChild(b);
+    });
+    QUICK.forEach(function (q) { $("dl-items").appendChild(h("option", { value: q })); });
+  })();
+  function doPantryAdd() {
+    var n = $("pantry-input").value;
+    if (!n.trim()) { $("pantry-input").focus(); return; }
+    if (addPantry(n, $("pantry-date").value)) { $("pantry-input").value = ""; $("pantry-date").value = ""; renderPantry(); sfx("pop"); }
+    $("pantry-input").focus();
+  }
+  $("pantry-add").onclick = doPantryAdd;
+  $("pantry-input").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); doPantryAdd(); } });
+  $("pantry-cook").onclick = function () { cookWith(pantry.slice().sort(function (a, b) { return (a.exp || "9999") < (b.exp || "9999") ? -1 : 1; })); };
+
+  /* ---- Shopping list ---- */
+  var STAPLE_RE = PANTRY.map(function (p) { return new RegExp("\\b" + esc(p)); });
+  function keyOf(t) { var k = coreKeys(t); return k.length ? k[0] : norm(t); }
+  function inPantry(t) {
+    var k = keyOf(t);
+    return pantry.some(function (p) { var pk = keyOf(p.name); return pk === k || (pk.length > 3 && k.indexOf(pk) >= 0) || (k.length > 3 && pk.indexOf(k) >= 0); });
+  }
+  function addShop(text, src, fromPlan) {
+    text = String(text).trim().slice(0, 80);
+    if (!text) return 0;
+    var l = text.toLowerCase(), k = keyOf(text);
+    if (fromPlan && (STAPLE_RE.some(function (r) { return r.test(l); }) || inPantry(text))) return 0;
+    for (var i = 0; i < shop.length; i++) {
+      if (keyOf(shop[i].text) === k) {
+        if (src && (shop[i].src || "").indexOf(src) < 0) shop[i].src = (shop[i].src ? shop[i].src + ", " : "") + src;
+        return 0;
+      }
+    }
+    shop.push({ id: uidv(), text: pretty(text), done: false, src: src || "" });
+    return 1;
+  }
+  function planRecipes() {
+    var out = [], seen = {};
+    Object.keys(plan).sort().forEach(function (d) {
+      if (dayDiff(d) < 0) return;
+      SLOTS.forEach(function (s) { var r = recById((plan[d] || {})[s[0]]); if (r && !seen[r.id]) { seen[r.id] = 1; out.push(r); } });
+    });
+    return out;
+  }
+  function shopFromPlan() {
+    var rs = planRecipes();
+    if (!rs.length) { toast("Plan some meals first"); return false; }
+    var n = 0;
+    rs.forEach(function (r) { r.ingredients.forEach(function (ing) { n += addShop(ing, r.name, true); }); });
+    jset(LK, shop);
+    toast(n ? "Added " + n + " items to your list" : "Nothing new to buy. You have it all!");
+    return true;
+  }
+  function renderShop() {
+    var box = $("shop-list"); box.textContent = "";
+    var todo = shop.filter(function (x) { return !x.done; }), done = shop.filter(function (x) { return x.done; });
+    $("shop-count").textContent = shop.length ? todo.length + " to buy" + (done.length ? ", " + done.length + " in the bag" : "") : "Everything you need to buy, in one place.";
+    if (!shop.length) box.appendChild(h("p", { class: "hint", text: "Your list is empty. Type an item above, or tap \"Add from week plan\" to collect everything your planned meals need." }));
+    todo.concat(done).forEach(function (it) {
+      var tick = h("button", { type: "button", class: "tick", "aria-label": (it.done ? "Untick " : "Tick ") + it.text, "aria-pressed": String(!!it.done), text: it.done ? "✓" : "" });
+      tick.onclick = function () { it.done = !it.done; jset(LK, shop); sfx(it.done ? "ok" : "soft"); renderShop(); };
+      var x = h("button", { type: "button", class: "x", "aria-label": "Remove " + it.text, text: "×" });
+      x.onclick = function () { shop = shop.filter(function (s) { return s.id !== it.id; }); jset(LK, shop); renderShop(); };
+      box.appendChild(h("div", { class: "lrow" + (it.done ? " done" : "") }, tick, h("div", { class: "tx" }, it.text, it.src ? h("small", { text: "for " + it.src }) : null), priceChip(it), x));
+    });
+  }
+  function doShopAdd() {
+    var parts = $("shop-input").value.split(/[,\n;]+/);
+    var n = 0; parts.forEach(function (p) { n += addShop(p, "", false); });
+    if (parts.join("").trim()) { jset(LK, shop); renderShop(); sfx("pop"); }
+    $("shop-input").value = ""; $("shop-input").focus();
+  }
+  $("shop-add").onclick = doShopAdd;
+  $("shop-input").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); doShopAdd(); } });
+  $("shop-fromplan").onclick = function () { if (shopFromPlan()) renderShop(); };
+  $("shop-clear").onclick = function () { shop = shop.filter(function (x) { return !x.done; }); jset(LK, shop); renderShop(); };
+  $("shop-bought").onclick = function () {
+    var got = shop.filter(function (x) { return x.done; });
+    if (!got.length) { toast("Tick the things you bought first"); return; }
+    got.forEach(function (x) { var k = coreKeys(x.text); addPantry(k.length ? k[0] : x.text, ""); });
+    shop = shop.filter(function (x) { return !x.done; }); jset(LK, shop);
+    toast("Moved " + got.length + " to your Pantry"); renderShop();
+  };
+  $("shop-share").onclick = function () {
+    var todo = shop.filter(function (x) { return !x.done; });
+    if (!todo.length) { toast("Nothing to share yet"); return; }
+    var text = "*Shopping list*\n" + todo.map(function (x) { return "☐ " + x.text; }).join("\n") + "\n\nMade with Food For Us: " + location.origin + location.pathname;
+    if (navigator.share && /Android|iPhone|iPad/i.test(navigator.userAgent)) navigator.share({ title: "Shopping list", text: text }).catch(function () {});
+    else window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank", "noopener");
+  };
+
+  /* ---- Week plan ---- */
+  function renderPlan() {
+    Object.keys(plan).forEach(function (k) { if (dayDiff(k) < 0) delete plan[k]; });
+    var box = $("plan-days"); box.textContent = "";
+    $("plan-empty").hidden = recipes.length > 0;
+    var sorted = recipes.slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
+    for (var i = 0; i < 7; i++) {
+      (function (i) {
+        var d = addDays(today0(), i), key = iso(d), card = h("section", { class: "card day" + (i === 0 ? " today" : "") });
+        var label = i === 0 ? "Today" : i === 1 ? "Tomorrow" : d.toLocaleDateString(undefined, { weekday: "long" });
+        card.appendChild(h("h3", null, label, h("small", { text: d.toLocaleDateString(undefined, { day: "numeric", month: "short" }) })));
+        SLOTS.forEach(function (s) {
+          var id = "s" + nid(), sel = h("select", { id: id, "aria-label": s[1] + " on " + label }), cur = (plan[key] || {})[s[0]];
+          if (cur && !recById(cur)) cur = "";
+          sel.appendChild(h("option", { value: "", text: "Not planned" }));
+          sorted.forEach(function (r) { sel.appendChild(h("option", { value: r.id, text: r.name })); });
+          sel.value = cur || "";
+          var go = h("button", { type: "button", class: "btn ghost gobtn gob", "aria-label": "Start cooking", text: "▶" });
+          go.hidden = !cur;
+          go.onclick = function () { var r = recById(sel.value); if (r) openCook(r); };
+          sel.onchange = function () {
+            plan[key] = plan[key] || {};
+            if (sel.value) plan[key][s[0]] = sel.value; else delete plan[key][s[0]];
+            if (!Object.keys(plan[key]).length) delete plan[key];
+            jset(PK, plan); go.hidden = !sel.value; sfx("pop");
+          };
+          card.appendChild(h("div", { class: "slot" }, h("label", { for: id, text: s[1] }), sel, go));
+        });
+        box.appendChild(card);
+      })(i);
+    }
+  }
+  function autoPlan() {
+    if (!recipes.length) { toast("Add some recipes first"); return; }
+    var use = {};
+    planRecipes().forEach(function (r) { use[r.id] = 1; });
+    function poolFor(types) { var f = recipes.filter(function (r) { return types.indexOf(r.type) >= 0; }); return f.length ? f : recipes; }
+    var pools = { b: poolFor(["Breakfast"]), l: poolFor(["Main meal", "Other"]), d: poolFor(["Main meal", "Other"]) }, n = 0;
+    for (var i = 0; i < 7; i++) {
+      var key = iso(addDays(today0(), i));
+      SLOTS.forEach(function (s) {
+        plan[key] = plan[key] || {};
+        if (plan[key][s[0]] && recById(plan[key][s[0]])) return;
+        var pool = pools[s[0]], min = 1e9;
+        pool.forEach(function (r) { min = Math.min(min, use[r.id] || 0); });
+        var best = pool.filter(function (r) { return (use[r.id] || 0) === min; });
+        var prev = i ? (plan[iso(addDays(today0(), i - 1))] || {})[s[0]] : null;
+        var nb = best.filter(function (r) { return r.id !== prev; }); if (nb.length) best = nb;
+        var r = best[Math.floor(Math.random() * best.length)];
+        plan[key][s[0]] = r.id; use[r.id] = (use[r.id] || 0) + 1; n += 1;
+      });
+      if (!Object.keys(plan[key]).length) delete plan[key];
+    }
+    jset(PK, plan); renderPlan();
+    toast(n ? "Planned " + n + " meals for you" : "Your week is already full");
+  }
+  $("plan-auto").onclick = autoPlan;
+  $("plan-clear").onclick = function () { plan = {}; jset(PK, plan); renderPlan(); toast("Week cleared"); };
+  $("plan-list").onclick = function () { if (shopFromPlan()) goto("shop"); };
+
+  /* ---- Today ---- */
+  function renderToday() {
+    var hr = new Date().getHours();
+    $("t-greet").textContent = hr < 12 ? "Good morning!" : hr < 17 ? "Good afternoon!" : "Good evening!";
+    $("t-title").textContent = "What shall we cook for " + (hr < 11 ? "breakfast" : hr < 16 ? "lunch" : hr < 19 ? "evening snacks" : "dinner") + "?";
+    var soon = expiring(3).length, need = shop.filter(function (x) { return !x.done; }).length;
+    var tiles = $("t-tiles"); tiles.textContent = "";
+    [["#recipes", recipes.length, "Recipes saved", "Your family book"], ["#shop", need, "Things to buy", "Shopping list"], ["#pantry", soon, "Use up soon", "Before it spoils"]].forEach(function (t) {
+      tiles.appendChild(h("a", { class: "tile", href: t[0] }, h("b", { text: String(t[1]) }), h("span", { text: t[2] }), h("small", { text: t[3] })));
+    });
+    /* today's menu */
+    var card = $("t-plan"); card.textContent = "";
+    card.appendChild(h("div", { class: "card-head" }, h("h2", { id: "h-tplan", text: "Today's menu" })));
+    var day = plan[iso(today0())] || {}, any = false;
+    SLOTS.forEach(function (s) {
+      var r = recById(day[s[0]]);
+      if (!r) return;
+      any = true;
+      var go = h("button", { type: "button", class: "btn small", text: "Cook" });
+      go.onclick = function () { openCook(r); };
+      card.appendChild(h("div", { class: "lrow" }, h("div", { class: "tx" }, r.name, h("small", { text: s[1] + (r.minutes ? " · " + r.minutes + " min" : "") })), go));
+    });
+    if (!any) {
+      card.appendChild(h("p", { class: "hint", text: "Nothing planned for today. Let us pick something, or plan the whole week in one go." }));
+      var sb = h("button", { type: "button", class: "btn", text: "🎲 Surprise me" }); sb.onclick = openSurprise;
+      var pb = h("a", { class: "btn ghost", href: "#plan", text: "Plan my week" });
+      card.appendChild(h("div", { class: "row" }, sb, pb));
+    }
+    /* use it up */
+    var ex = $("t-exp"); ex.textContent = "";
+    ex.appendChild(h("div", { class: "card-head" }, h("h2", { id: "h-texp", text: "Use it up first" })));
+    var list = expiring(5).slice(0, 5);
+    if (list.length) {
+      list.forEach(function (p) { var b = pBadge(p); ex.appendChild(h("div", { class: "lrow" }, h("div", { class: "tx" }, p.name), h("span", { class: "pill " + b[0], text: b[1] }))); });
+      var cb = h("button", { type: "button", class: "btn", text: "🍳 Cook these first" });
+      cb.onclick = function () { cookWith(expiring(5)); };
+      ex.appendChild(cb);
+    } else {
+      ex.appendChild(h("p", { class: "hint", text: pantry.length ? "Nothing is about to expire. Well done, no food waste!" : "Add what is in your fridge to Pantry, with expiry dates. We will remind you what to cook first so nothing is wasted." }));
+      ex.appendChild(h("a", { class: "btn ghost", href: "#pantry", text: "Open Pantry" }));
+    }
+    $("t-starter").hidden = recipes.length >= 3;
+  }
+  $("t-addstart").onclick = addAllStarters;
+
+  /* ---- tiny extras ---- */
+  $("t-art").innerHTML = POT;
+  $("from-pantry").onclick = function () { if (!pantry.length) { toast("Your Pantry is empty. Add items there first."); return; } var names = pantry.slice().sort(function (a, b) { return (a.exp || "9999") < (b.exp || "9999") ? -1 : 1; }).map(function (p) { return p.name; }); addItems(names.slice(0, 20)); toast("Added from your Pantry"); };
+  document.addEventListener("keydown", function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var t = e.target, typing = t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName);
+    if (typing || document.querySelector("dialog[open]")) return;
+    var map = { "1": "today", "2": "recipes", "3": "cook", "4": "plan", "5": "shop", "6": "pantry" };
+    if (map[e.key]) { goto(map[e.key]); }
+    else if (e.key === "s" || e.key === "S") { openSurprise(); }
+    else if (e.key === "/") { e.preventDefault(); goto("recipes"); setTimeout(function () { var s = $("r-search"); if (s && !$("rtools").hidden) s.focus(); }, 50); }
+  });
+
+
+  /* =====================================================================
+     v3: kitchen score, voice input, Dadi mode, install button
+     ===================================================================== */
+  var IMK = "ffu-impact";
+  function impact() { var v = jget(IMK, null); if (!v || typeof v !== "object") v = {}; v.meals = v.meals || 0; v.rescued = v.rescued || 0; v.days = Array.isArray(v.days) ? v.days : []; return v; }
+  function streakOf(days) { var n = 0, d = today0(); if (days.indexOf(iso(d)) < 0) d = addDays(d, -1); while (days.indexOf(iso(d)) >= 0) { n += 1; d = addDays(d, -1); } return n; }
+  var LEVELS = [[0, "Chai-maker"], [3, "Rasoi Rookie"], [10, "Ghar Ka Chef"], [25, "Annapurna"]];
+  function levelOf(m) { var l = LEVELS[0][1]; LEVELS.forEach(function (x) { if (m >= x[0]) l = x[1]; }); return l; }
+  function logCooked() {
+    var name = $("ck-title").textContent, lis = Array.prototype.map.call(document.querySelectorAll("#ck-ing li"), function (li) { return norm(li.textContent); });
+    var used = expiring(3).filter(function (p) { var k = norm(p.name).replace(/s$/, ""); return k && lis.some(function (l) { return l.indexOf(k) >= 0; }); });
+    var im = impact(), t = iso(today0());
+    im.meals += 1; im.rescued += used.length;
+    if (im.days.indexOf(t) < 0) im.days.push(t);
+    im.days = im.days.slice(-60);
+    jset(IMK, im);
+    if (used.length) { var ids = used.map(function (p) { return p.id; }); pantry = pantry.filter(function (p) { return ids.indexOf(p.id) < 0; }); savePantry(); }
+    toast(used.length ? "Brilliant! You saved " + used.length + " item" + (used.length > 1 ? "s" : "") + " from the bin 🌱" : "Yum! " + name + " cooked 🎉");
+    renderToday();
+  }
+  var _next = $("ck-next").onclick;
+  $("ck-next").onclick = function () { var last = ck.i >= ck.steps.length - 1; _next(); if (last) logCooked(); };
+
+  function renderImpact() {
+    var c = $("t-impact"); if (!c) return; c.textContent = "";
+    var im = impact(), st = streakOf(im.days), money = im.rescued * 40;
+    c.appendChild(h("div", { class: "card-head" }, h("h2", { id: "h-timp", text: "Your kitchen score" })));
+    c.appendChild(h("div", { class: "lvl" }, h("span", { class: "pill", text: levelOf(im.meals) }), h("span", { class: "hint", text: st ? "🔥 " + st + (st === 1 ? " day" : " days") + " cooking at home in a row" : "Cook a meal today to start your streak" })));
+    c.appendChild(h("div", { class: "score" },
+      h("div", {}, h("b", { text: String(im.meals) }), h("small", { text: "Meals cooked" })),
+      h("div", {}, h("b", { text: String(im.rescued) }), h("small", { text: "Food rescued" })),
+      h("div", {}, h("b", { text: "₹" + money }), h("small", { text: "Saved (est.)" }))));
+    var w = h("div", { class: "week7", "aria-label": "Last 7 days" });
+    for (var i = 6; i >= 0; i--) { var d = addDays(today0(), -i); w.appendChild(h("i", { class: im.days.indexOf(iso(d)) >= 0 ? "on" : "", text: "SMTWTFS".charAt(d.getDay()) })); }
+    c.appendChild(w);
+    c.appendChild(h("p", { class: "hint", text: "Food rescued counts items that were close to expiry and got cooked in time. Money is a rough guess of ₹40 per rescued item." }));
+    var sh = h("button", { type: "button", class: "btn ghost small", text: "Share my score on WhatsApp" });
+    sh.onclick = function () { var t = "🍲 My Food For Us kitchen score: " + im.meals + " meals cooked at home, " + im.rescued + " food items rescued from waste, ~₹" + money + " saved. " + (st ? "🔥 " + st + "-day streak! " : "") + "Level: " + levelOf(im.meals); window.open("https://wa.me/?text=" + encodeURIComponent(t), "_blank", "noopener"); };
+    c.appendChild(sh);
+  }
+  var _rt = renderToday;
+  renderToday = function () { _rt(); renderImpact(); };
+
+  /* ---- voice: add things by speaking (Chrome / Edge / Android) ---- */
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition, rec = null, recBtn = null;
+  function stopVoice() { if (rec) { try { rec.stop(); } catch (e) {} } }
+  function voice(btn, onText, long) {
+    if (rec) { var same = recBtn === btn; stopVoice(); if (same) return; }
+    var r = new SR(); rec = r; recBtn = btn;
+    r.lang = state.lang === "hi" ? "hi-IN" : "en-IN"; r.interimResults = false; r.continuous = !!long;
+    r.onresult = function (e) { var t = ""; for (var i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) t += e.results[i][0].transcript + " "; if (t.trim()) onText(t.trim()); };
+    r.onerror = function (e) { if (e.error === "not-allowed" || e.error === "service-not-allowed") toast("Please allow the microphone to use voice."); else if (e.error === "no-speech") toast("Did not hear anything. Try again."); };
+    r.onend = function () { btn.classList.remove("live"); if (rec === r) { rec = null; recBtn = null; } };
+    btn.classList.add("live"); try { r.start(); } catch (e) { btn.classList.remove("live"); rec = null; }
+  }
+  function addMic(inputId, onText, label) {
+    var inp = $(inputId); if (!inp || !SR) return;
+    var b = h("button", { type: "button", class: "iconbtn mic", "aria-label": label, title: label, text: "🎤" });
+    b.onclick = function () { voice(b, onText, false); };
+    inp.insertAdjacentElement("afterend", b);
+  }
+  function splitSpoken(t) { return t.split(/,|\band\b|\baur\b|\bऔर\b/i).map(function (x) { return x.trim(); }).filter(Boolean); }
+  addMic("item-input", function (t) { addItems(splitSpoken(t)); toast("Added by voice"); }, "Add ingredients by voice");
+  addMic("shop-input", function (t) { splitSpoken(t).forEach(function (x) { addShop(x, "voice"); }); renderShop(); }, "Add to shopping list by voice");
+  addMic("pantry-input", function (t) { splitSpoken(t).forEach(function (x) { addPantry(x, ""); }); renderPantry(); toast("Added to Pantry"); }, "Add to Pantry by voice");
+
+  /* ---- Dadi mode: speak or paste, AI writes the recipe ---- */
+  var dadiMic = null;
+  if (SR) {
+    dadiMic = h("button", { type: "button", class: "btn small", text: "🎤 Start speaking" });
+    dadiMic.onclick = function () { voice(dadiMic, function (t) { var ta = $("dadi-text"); ta.value = (ta.value ? ta.value + " " : "") + t; }, true); setTimeout(function () { dadiMic.textContent = rec === null ? "🎤 Start speaking" : "⏹ Stop"; }, 150); };
+    $("dadi-text").insertAdjacentElement("beforebegin", dadiMic);
+  }
+  $("dadi-open").onclick = function () { $("dadi-msg").textContent = ""; openDlg($("dadi")); };
+  $("dadi-close").onclick = function () { stopVoice(); closeDlg($("dadi")); };
+  function setSel(sel, val) { var o = $(sel); for (var i = 0; i < o.options.length; i++) if (o.options[i].value === val || o.options[i].text === val) { o.selectedIndex = i; return; } }
+  $("dadi-go").onclick = async function () {
+    var txt = $("dadi-text").value.trim(), msg = $("dadi-msg");
+    stopVoice();
+    if (txt.length < 15) { msg.textContent = "Please tell or paste the recipe first."; return; }
+    if (!aiReady()) { openAI("Please connect an AI to use Dadi mode."); return; }
+    var btn = $("dadi-go"); btn.disabled = true; btn.textContent = "Writing it down..."; msg.textContent = "";
+    var prompt = ["Someone is telling a family recipe out loud or pasted it from a chat. It may be in Hindi, Hinglish or English, rambling, with repeats.",
+      "Turn it into one clean recipe. Keep the dish name they use. Use very simple short sentences. Do not invent steps or ingredients they did not say; if a quantity was not said, write the ingredient without one.",
+      "Put every personal tip, memory or little secret (for example 'Dadi adds a pinch of sugar') into notes.",
+      "Write the text in " + (/[\u0900-\u097F]/.test(txt) ? "Hindi (Devanagari)" : "English") + ".",
+      "Reply with only JSON: {\"name\":string,\"minutes\":number,\"serves\":number,\"type\":\"Breakfast\"|\"Main meal\"|\"Snack\"|\"Sweet\"|\"Other\",\"veg\":boolean,\"ingredients\":[string],\"steps\":[string],\"notes\":string}.",
+      "Recipe told:\n" + txt.slice(0, 6000)].join("\n");
+    try {
+      var r = await ask(prompt, [], null);
+      if (!r || !r.name || !Array.isArray(r.steps)) throw { code: "empty" };
+      $("ed-name").value = String(r.name).slice(0, 80);
+      $("ed-time").value = Number(r.minutes) > 0 ? Math.round(r.minutes) : "";
+      $("ed-serves").value = Number(r.serves) > 0 ? Math.round(r.serves) : "";
+      setSel("ed-type", r.type);
+      var vb = document.querySelector('#ed-veg [data-veg="' + (r.veg === false ? "0" : "1") + '"]'); if (vb) vb.click();
+      $("ed-ing").value = (r.ingredients || []).join("\n");
+      $("ed-steps").value = r.steps.join("\n");
+      $("ed-notes").value = r.notes || "";
+      closeDlg($("dadi")); $("dadi-text").value = "";
+      toast("Written down! Please check it, then save.");
+    } catch (e) { msg.textContent = errInfo(e).text; }
+    btn.disabled = false; btn.textContent = "Write it down";
+  };
+
+  renderToday();
+
+
+  /* ---- v3.1: AI price estimate for the shopping list ---- */
+  function priceChip(it) {
+    if (it.price == null) return null;
+    var c = h("button", { type: "button", class: "pill pprice", title: "Tap to change this price", text: "≈ ₹" + it.price });
+    c.onclick = function () { var v = window.prompt("Price for " + it.text + " in ₹ (leave empty to clear)", it.price); if (v === null) return; v = parseFloat(String(v).replace(/[^\d.]/g, "")); it.price = isFinite(v) && v >= 0 ? Math.round(v) : null; jset(LK, shop); renderShop(); };
+    return c;
+  }
+  function paintTotal() {
+    var box = $("shop-total"); if (!box) return;
+    var priced = shop.filter(function (x) { return x.price != null; });
+    box.hidden = !priced.length; box.textContent = "";
+    if (!priced.length) return;
+    var all = priced.reduce(function (a, x) { return a + x.price; }, 0), left = priced.filter(function (x) { return !x.done; }).reduce(function (a, x) { return a + x.price; }, 0);
+    box.appendChild(h("div", {}, h("small", { text: "Estimated total" }), h("br"), h("b", { text: "₹" + all.toLocaleString("en-IN") })));
+    box.appendChild(h("div", {}, h("small", { text: "Still to buy" }), h("br"), h("b", { text: "₹" + left.toLocaleString("en-IN") })));
+    box.appendChild(h("small", { text: priced.length + " of " + shop.length + " items priced. Prices are a rough guess for an Indian local market, so the real bill can differ." }));
+  }
+  var _rs = renderShop;
+  renderShop = function () { _rs(); paintTotal(); };
+  $("shop-price").onclick = async function () {
+    if (!shop.length) { toast("Add some items to your list first."); return; }
+    if (!aiReady()) { openAI("Please connect an AI to estimate prices."); return; }
+    var todo = shop.filter(function (x) { return x.price == null; }); if (!todo.length) todo = shop.slice();
+    var btn = $("shop-price"); btn.disabled = true; btn.textContent = "Checking prices...";
+    var prompt = ["You help an Indian family estimate a grocery bill.",
+      "Give the approximate current retail price in Indian rupees (₹) at a normal local market or kirana store for each item below, for exactly the quantity written. If no quantity is written, assume a normal household purchase (for example 1 kg of vegetables, 1 packet of milk, 1 dozen eggs). Prices must be whole numbers.",
+      "Reply with only JSON like {\"prices\":[{\"n\":0,\"price\":40}]} with one entry for every item, where n is the item number given.",
+      "Items:\n" + todo.map(function (x, i) { return i + ". " + x.text; }).join("\n")].join("\n");
+    try {
+      var r = await ask(prompt, [], null), arr = Array.isArray(r) ? r : (r && r.prices) || [], got = 0;
+      arr.forEach(function (e) { var it = todo[Number(e && e.n)], p = Math.round(Number(e && e.price)); if (it && isFinite(p) && p >= 0) { it.price = p; got += 1; } });
+      if (!got) throw { code: "empty" };
+      jset(LK, shop); renderShop(); toast("Priced " + got + " item" + (got > 1 ? "s" : "") + " 💰");
+    } catch (e) { var inf = errInfo(e); toast(inf.text); if (inf.keyProblem) openAI(inf.text); }
+    btn.disabled = false; btn.innerHTML = "&#128176; Estimate prices with AI";
+  };
+  renderShop();
+
+
+  /* ---- v3.2: drag and drop / paste photos ---- */
+  function showThumbs(files) {
+    var t = $("thumbs"); t.textContent = "";
+    files.forEach(function (f) { var u = URL.createObjectURL(f), im = h("img", { alt: "Your photo", src: u }); im.onload = function () { URL.revokeObjectURL(u); }; t.appendChild(im); });
+  }
+  function takeImages(list) { return Array.prototype.filter.call(list || [], function (f) { return /^image\//.test(f.type); }).slice(0, 4); }
+  function dropPhotos(files) {
+    if (!files.length) { toast("Please drop an image file."); return; }
+    if (!aiReady()) { openAI("Please connect an AI to read photos."); return; }
+    if (!cur().vision) { toast(cur().name + " cannot read photos. Pick another AI, or type your list."); return; }
+    readPhotos(files);
+  }
+  var card = $("start"), depth = 0;
+  card.addEventListener("dragenter", function (e) { e.preventDefault(); depth += 1; card.classList.add("over"); });
+  card.addEventListener("dragover", function (e) { e.preventDefault(); });
+  card.addEventListener("dragleave", function () { depth = Math.max(0, depth - 1); if (!depth) card.classList.remove("over"); });
+  card.addEventListener("drop", function (e) { e.preventDefault(); depth = 0; card.classList.remove("over"); dropPhotos(takeImages(e.dataTransfer && e.dataTransfer.files)); });
+  window.addEventListener("dragover", function (e) { e.preventDefault(); });
+  window.addEventListener("drop", function (e) { e.preventDefault(); });
+  document.addEventListener("paste", function (e) {
+    if ($("view-cook").hidden) return;
+    var f = takeImages(e.clipboardData && e.clipboardData.files); if (f.length) { e.preventDefault(); dropPhotos(f); }
+  });
+
+  /* ---------- clear any old offline cache from earlier versions ---------- */
+  try {
+    if (navigator.serviceWorker) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); });
+    if (window.caches) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); });
+  } catch (e) {}
 
   /* ---------- start ---------- */
   renderItems();
